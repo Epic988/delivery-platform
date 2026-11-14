@@ -11,6 +11,8 @@ import authRoutes from './routes/auth.js';
 import storeRoutes from './routes/stores.js';
 import productRoutes from './routes/products.js';
 import categoryRoutes from './routes/categories.js';
+import addressRoutes from './routes/addresses.js';
+import cartRoutes from './routes/cart.js';
 
 export async function buildApp() {
   const app = Fastify({
@@ -44,6 +46,8 @@ export async function buildApp() {
   await app.register(storeRoutes, { prefix: '/api' });
   await app.register(productRoutes, { prefix: '/api' });
   await app.register(categoryRoutes, { prefix: '/api' });
+  await app.register(addressRoutes, { prefix: '/api' });
+  await app.register(cartRoutes, { prefix: '/api' });
 
   return app;
 }
