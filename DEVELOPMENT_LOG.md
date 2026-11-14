@@ -71,3 +71,24 @@
 
 ### Next action
 - Push and verify backend-ci green.
+
+## 2026-11-14 — Phase 5 COMPLETE
+
+Customer APK: build-customer-apk, run 43601534276, 9m25s, green
+Driver APK:   build-driver-apk,   run 43602673843, 7m51s, green
+Both artifacts downloaded locally (~153 MB each, debug signed).
+
+Stack: Expo SDK 57 + RN 0.86.0 + React 19.2.3
+CI: ubuntu-latest, Node 24, JDK 17, Gradle 8.13
+
+Customer screens (12): Login, Register, Home, Stores, StoreDetails, Products,
+Cart, Addresses, Checkout, CourierRequest, Orders, OrderDetails, Profile.
+Driver screens (4): Login, Home, AssignmentDetails, Proof.
+
+Limitations:
+- API base URL defaults to http://10.0.2.2:3000 (emulator).
+- Debug-signed APK (not production).
+- Backend not deployed -> apps cannot reach API until hosted.
+- No maps, no background GPS, no admin dashboard, no push.
+
+Next: deployment of backend, then Phase 6 admin dashboard.
