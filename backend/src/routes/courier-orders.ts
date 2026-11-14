@@ -80,8 +80,8 @@ const courierOrderRoutes: FastifyPluginAsync = async (app) => {
         weightGrams: body.weightGrams,
         pickupLat: body.pickupLat,
         pickupLng: body.pickupLng,
-        destLat: body.destLat,
-        destLng: body.destLng,
+        destLat: body.destinationLat,
+        destLng: body.destinationLng,
       });
 
       const order = await app.prisma.courierOrder.create({
@@ -155,3 +155,4 @@ const courierOrderRoutes: FastifyPluginAsync = async (app) => {
 };
 
 export default courierOrderRoutes;
+
