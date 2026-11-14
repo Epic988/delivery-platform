@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: delivery-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    buildCommand: npm ci && npx prisma generate && npx prisma migrate deploy && npm run build
+    startCommand: node dist/server.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+      - key: CORS_ORIGIN
+        value: https://delivery.epic988.app
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: BCRYPT_ROUNDS
+        value: "12"
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false

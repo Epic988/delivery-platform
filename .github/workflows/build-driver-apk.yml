@@ -17,6 +17,8 @@ jobs:
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      EXPO_PUBLIC_API_URL: ${{ vars.EXPO_PUBLIC_API_URL }}
+      EXPO_NO_TELEMETRY: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,25 +36,23 @@ jobs:
             ~/.gradle/wrapper
           key: gradle-driver-${{ hashFiles('apps/driver/**/*.gradle*', 'apps/driver/**/gradle-wrapper.properties') }}
           restore-keys: gradle-driver-
+      - name: Verify API URL
+        run: |
+          if [ -z "$EXPO_PUBLIC_API_URL" ]; then
+            echo "::error::Repository variable EXPO_PUBLIC_API_URL is not set"; exit 1
+          fi
+          echo "API base URL: $EXPO_PUBLIC_API_URL"
       - name: Install root deps
         run: npm install --no-audit --no-fund --legacy-peer-deps
       - name: Prebuild Android
         working-directory: apps/driver
         run: npx expo prebuild --platform android --no-install
-      - name: Force Gradle 8.13 wrapper
+      - name: Build release APK (debug-signed)
         working-directory: apps/driver/android
-        run: |
-          sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.13-all.zip|' gradle/wrapper/gradle-wrapper.properties
-      - name: Build debug APK
-        working-directory: apps/driver/android
-        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+        run: chmod +x gradlew && ./gradlew assembleRelease --no-daemon
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: driver-debug-apk
-          path: apps/driver/android/app/build/outputs/apk/debug/*.apk
+          name: driver-release-apk
+          path: apps/driver/android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
-
-
-
-
