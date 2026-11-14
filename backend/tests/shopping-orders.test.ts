@@ -21,6 +21,16 @@ let prodA: string;
 let prodB: string;
 
 async function cleanup() {
+  const users = await prisma.user.findMany({
+    where: { phone: { in: [PHONE, OTHER] } },
+    select: { id: true },
+  });
+  const userIds = users.map((u) => u.id);
+  if (userIds.length > 0) {
+    await prisma.shoppingOrder.deleteMany({ where: { customerId: { in: userIds } } });
+    await prisma.checkoutGroup.deleteMany({ where: { customerId: { in: userIds } } });
+    await prisma.address.deleteMany({ where: { userId: { in: userIds } } });
+  }
   await prisma.store.deleteMany({ where: { slug: { in: [SLUG_A, SLUG_B] } } });
   await prisma.user.deleteMany({ where: { phone: { in: [PHONE, OTHER] } } });
   await prisma.pricingRule.deleteMany({ where: { orderType: 'SHOPPING' } });
@@ -206,3 +216,4 @@ describe('shopping checkout', () => {
     expect(res2.statusCode).toBe(404);
   });
 });
+
