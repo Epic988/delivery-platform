@@ -32,6 +32,7 @@ jobs:
           --health-retries 5
     env:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
+      PSQL_URL: postgresql://ci:ci@localhost:5432/ci
       JWT_SECRET: ci-test-secret-do-not-use-in-production-1234567890
       NODE_ENV: test
       LOG_LEVEL: warn
@@ -63,7 +64,7 @@ jobs:
         run: npx prisma db push --skip-generate
 
       - name: Apply CHECK constraints
-        run: psql "$DATABASE_URL" -f prisma/sql/check-constraints.sql
+        run: psql "$PSQL_URL" -f prisma/sql/check-constraints.sql
 
       - name: Run tests
         run: npm test
