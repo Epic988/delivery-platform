@@ -39,6 +39,10 @@ jobs:
       - name: Prebuild Android
         working-directory: apps/customer
         run: npx expo prebuild --platform android --no-install
+      - name: Force Gradle 8.13 wrapper
+        working-directory: apps/customer/android
+        run: |
+          sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.13-all.zip|' gradle/wrapper/gradle-wrapper.properties
       - name: Build debug APK
         working-directory: apps/customer/android
         run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
@@ -48,5 +52,6 @@ jobs:
           name: customer-debug-apk
           path: apps/customer/android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
 
 
