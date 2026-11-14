@@ -14,6 +14,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,7 +26,6 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "17"
-      - uses: android-actions/setup-android@v3
       - name: Cache gradle
         uses: actions/cache@v4
         with:
@@ -46,3 +48,4 @@ jobs:
           name: driver-debug-apk
           path: apps/driver/android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
