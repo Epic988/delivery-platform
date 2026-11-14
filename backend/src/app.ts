@@ -8,6 +8,9 @@ import authPlugin from './plugins/auth.js';
 import errorHandler from './plugins/errorHandler.js';
 import healthRoutes from './routes/health.js';
 import authRoutes from './routes/auth.js';
+import storeRoutes from './routes/stores.js';
+import productRoutes from './routes/products.js';
+import categoryRoutes from './routes/categories.js';
 
 export async function buildApp() {
   const app = Fastify({
@@ -38,6 +41,9 @@ export async function buildApp() {
 
   await app.register(healthRoutes);
   await app.register(authRoutes, { prefix: '/api' });
+  await app.register(storeRoutes, { prefix: '/api' });
+  await app.register(productRoutes, { prefix: '/api' });
+  await app.register(categoryRoutes, { prefix: '/api' });
 
   return app;
 }
