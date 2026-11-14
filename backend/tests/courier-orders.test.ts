@@ -39,8 +39,8 @@ const basePayload = {
   destinationAddressText: 'Destination address',
   pickupLat: 15.5,
   pickupLng: 32.5,
-  destLat: 15.6,
-  destLng: 32.6,
+  destinationLat: 15.6,
+  destinationLng: 32.6,
 };
 
 beforeAll(async () => {
@@ -157,3 +157,4 @@ describe('courier orders', () => {
     expect(res2.statusCode).toBe(404);
   });
 });
+
