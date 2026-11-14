@@ -12,15 +12,25 @@ import authRoutes from './routes/auth.js';
 export async function buildApp() {
   const app = Fastify({
     logger: { level: config.logLevel },
-    trustProxy: true,
+    trustProxy: config.trustProxy,
     bodyLimit: 5 * 1024 * 1024,
   });
 
   await app.register(helmet, { contentSecurityPolicy: false });
+
+  const allowedOrigins =
+    config.corsOrigin === '*' ? true : config.corsOrigin.split(',').map((s) => s.trim());
+
   await app.register(cors, {
-    origin: config.corsOrigin === '*' ? true : config.corsOrigin.split(',').map((s) => s.trim()),
+    origin: allowedOrigins,
+    credentials: config.corsOrigin !== '*',
   });
-  await app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
+
+  await app.register(rateLimit, {
+    max: 120,
+    timeWindow: '1 minute',
+    keyGenerator: (req) => req.ip,
+  });
 
   await app.register(prismaPlugin);
   await app.register(errorHandler);

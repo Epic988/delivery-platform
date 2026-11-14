@@ -43,3 +43,31 @@
 ### Next action
 - Push this commit; verify backend-ci passes on GitHub Actions.
 - Then Phase 4: stores/products/cart routes.
+
+## 2026-11-14 — Phase 3.5 complete
+
+### Schema corrections
+- ProofOfDelivery: real FK to ShoppingOrder/CourierOrder + @unique; exactly-one enforced by CHECK.
+- Address.lat/lng and CourierOrder pickup/destination coords optional; text addresses mandatory.
+- CheckoutGroup model + ShoppingOrder.checkoutGroupId group multi-store checkouts.
+- Customer.defaultAddressId: real FK with @unique + onDelete:SetNull.
+- CHECK constraints in backend/prisma/sql/check-constraints.sql.
+
+### Security
+- Production startup fails on wildcard CORS or JWT_SECRET < 32 chars.
+- trustProxy only when production AND TRUST_PROXY=true.
+- requireRole() re-verifies from DB (no stale JWT trust).
+- Zod .strict() blocks unknown fields; P2002 -> generic 409.
+- Rate limits: register 5/15min, login 10/min.
+- Dependency audit: 12 vulnerabilities (4 critical) resolved. 0 prod vulns.
+
+### Reproducibility
+- package-lock.json regenerated (106 KB).
+- CI: npm ci + Postgres 16 service + db push + CHECK constraints + tests.
+- 9 tests: health (2) + auth (7).
+
+### Docs
+- docs/SETUP.md: Neon Free, env, migrations, tests, hardening.
+
+### Next action
+- Push and verify backend-ci green.
