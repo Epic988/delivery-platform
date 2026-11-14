@@ -1,8 +1,9 @@
 import fp from 'fastify-plugin';
 import { ZodError } from 'zod';
+import type { FastifyError } from 'fastify';
 
 export default fp(async (app) => {
-  app.setErrorHandler((error, _req, reply) => {
+  app.setErrorHandler<FastifyError | ZodError>((error, _req, reply) => {
     if (error instanceof ZodError) {
       return reply.status(400).send({
         error: 'validation_error',
@@ -11,13 +12,14 @@ export default fp(async (app) => {
     }
 
     const status = typeof error.statusCode === 'number' ? error.statusCode : 500;
+
     if (status >= 500) {
       app.log.error(error);
       return reply.status(500).send({ error: 'internal_error' });
     }
 
     return reply.status(status).send({
-      error: error.code ?? 'request_error',
+      error: error.code || 'request_error',
       message: error.message,
     });
   });
