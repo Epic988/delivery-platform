@@ -6,28 +6,16 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "scheme": "delivery-customer",
-    "splash": {
-      "backgroundColor": "#1E40AF"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "splash": { "backgroundColor": "#1E40AF" },
+    "assetBundlePatterns": ["**/*"],
     "android": {
       "package": "com.epic988.delivery.customer",
       "versionCode": 1,
-      "permissions": [
-        "INTERNET",
-        "ACCESS_NETWORK_STATE"
-      ]
+      "permissions": ["INTERNET", "ACCESS_NETWORK_STATE"]
     },
     "plugins": [
       "expo-localization",
-      "expo-build-properties",
-      {
-        "android": {
-          "kotlinVersion": "2.2.0"
-        }
-      }
+      ["expo-build-properties", { "android": { "kotlinVersion": "2.2.0" } }]
     ]
   }
 }
