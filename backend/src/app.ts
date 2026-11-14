@@ -13,6 +13,7 @@ import productRoutes from './routes/products.js';
 import categoryRoutes from './routes/categories.js';
 import addressRoutes from './routes/addresses.js';
 import cartRoutes from './routes/cart.js';
+import shoppingOrderRoutes from './routes/shopping-orders.js';
 
 export async function buildApp() {
   const app = Fastify({
@@ -48,6 +49,7 @@ export async function buildApp() {
   await app.register(categoryRoutes, { prefix: '/api' });
   await app.register(addressRoutes, { prefix: '/api' });
   await app.register(cartRoutes, { prefix: '/api' });
+  await app.register(shoppingOrderRoutes, { prefix: '/api' });
 
   return app;
 }
