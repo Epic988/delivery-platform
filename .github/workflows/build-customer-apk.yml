@@ -35,7 +35,7 @@ jobs:
           key: gradle-customer-${{ hashFiles('apps/customer/**/*.gradle*', 'apps/customer/**/gradle-wrapper.properties') }}
           restore-keys: gradle-customer-
       - name: Install root deps
-        run: npm install --no-audit --no-fund
+        run: npm install --no-audit --no-fund --legacy-peer-deps
       - name: Prebuild Android
         working-directory: apps/customer
         run: npx expo prebuild --platform android --no-install
@@ -48,4 +48,5 @@ jobs:
           name: customer-debug-apk
           path: apps/customer/android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
 

@@ -35,7 +35,7 @@ jobs:
           key: gradle-driver-${{ hashFiles('apps/driver/**/*.gradle*', 'apps/driver/**/gradle-wrapper.properties') }}
           restore-keys: gradle-driver-
       - name: Install root deps
-        run: npm install --no-audit --no-fund
+        run: npm install --no-audit --no-fund --legacy-peer-deps
       - name: Prebuild Android
         working-directory: apps/driver
         run: npx expo prebuild --platform android --no-install
@@ -48,4 +48,5 @@ jobs:
           name: driver-debug-apk
           path: apps/driver/android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
 
