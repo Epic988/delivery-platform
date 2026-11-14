@@ -16,6 +16,7 @@ import cartRoutes from './routes/cart.js';
 import shoppingOrderRoutes from './routes/shopping-orders.js';
 import courierOrderRoutes from './routes/courier-orders.js';
 import driverRoutes from './routes/driver.js';
+import adminRoutes from './routes/admin.js';
 
 export async function buildApp() {
   const app = Fastify({
@@ -54,7 +55,9 @@ export async function buildApp() {
   await app.register(shoppingOrderRoutes, { prefix: '/api' });
   await app.register(courierOrderRoutes, { prefix: '/api' });
   await app.register(driverRoutes, { prefix: '/api' });
+  await app.register(adminRoutes, { prefix: '/api' });
 
   return app;
 }
+
 
