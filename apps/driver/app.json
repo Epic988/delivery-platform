@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "توصيل — السائق",
+    "slug": "delivery-driver",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "delivery-driver",
+    "splash": {
+      "backgroundColor": "#1E3A8A"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "android": {
+      "package": "com.epic988.delivery.driver",
+      "versionCode": 1,
+      "permissions": ["INTERNET", "ACCESS_NETWORK_STATE", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+    },
+    "plugins": ["expo-localization"]
+  }
+}

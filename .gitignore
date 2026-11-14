@@ -75,3 +75,11 @@ coverage/
 # Misc
 *.pid
 *.seed
+
+# Expo prebuild generated native folders
+apps/*/android/
+apps/*/ios/
+apps/*/.expo/
+apps/*/*.tsbuildinfo
+
+

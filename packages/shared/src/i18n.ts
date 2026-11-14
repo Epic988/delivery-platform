@@ -1,0 +1,61 @@
+export type Language = 'ar' | 'en';
+
+const ar = {
+  appName: 'توصيل', customerApp: 'توصيل — العميل', driverApp: 'توصيل — السائق',
+  login: 'تسجيل الدخول', register: 'إنشاء حساب', logout: 'تسجيل الخروج',
+  phone: 'رقم الهاتف', password: 'كلمة المرور', fullName: 'الاسم الكامل',
+  home: 'الرئيسية', shop: 'تسوق', send: 'أرسل', orders: 'طلباتي', profile: 'حسابي', cart: 'السلة',
+  shopFromStores: 'تسوق من المتاجر المحلية', sendPackage: 'أرسل طرداً بين عنوانين',
+  stores: 'المتاجر', products: 'المنتجات', addToCart: 'أضف للسلة', checkout: 'إتمام الطلب',
+  orderNow: 'اطلب الآن', subtotal: 'المجموع الفرعي', deliveryFee: 'رسوم التوصيل', total: 'الإجمالي',
+  addresses: 'العناوين', addAddress: 'أضف عنواناً', addressText: 'العنوان', label: 'التسمية (اختياري)',
+  newAddress: 'عنوان جديد', save: 'حفظ', cancel: 'إلغاء', confirm: 'تأكيد', back: 'رجوع',
+  pickup: 'الاستلام', destination: 'التوصيل', senderName: 'اسم المرسل', senderPhone: 'هاتف المرسل',
+  recipientName: 'اسم المستلم', recipientPhone: 'هاتف المستلم', packageDescription: 'وصف الطرد',
+  packageCategory: 'فئة الطرد', packageSize: 'الحجم', weight: 'الوزن (غرام)', getQuote: 'احسب السعر',
+  quotedPrice: 'السعر المتوقع', createOrder: 'إنشاء الطلب', orderCreated: 'تم إنشاء طلبك',
+  orderNumber: 'رقم الطلب', orderDetails: 'تفاصيل الطلب', trackOrder: 'تتبع الطلب', noOrders: 'لا توجد طلبات',
+  status: 'الحالة', items: 'المنتجات', quantity: 'الكمية', price: 'السعر', loading: 'جاري التحميل...',
+  error: 'حدث خطأ', retry: 'إعادة المحاولة', emptyCart: 'السلة فارغة', noStores: 'لا توجد متاجر',
+  noProducts: 'لا توجد منتجات', search: 'بحث', settings: 'الإعدادات', apiBaseUrl: 'عنوان الـ API',
+  selectAddress: 'اختر عنواناً', available: 'متاح', outOfStock: 'غير متوفر', language: 'اللغة',
+  driver: 'السائق', available_for_work: 'متاح للعمل', unavailable: 'غير متاح', assignments: 'التعيينات',
+  accept: 'قبول', decline: 'رفض', arriveAtPickup: 'وصلت لموقع الاستلام', pickedUp: 'تم الاستلام',
+  inTransit: 'قيد التوصيل', markDelivered: 'تم التوصيل', markFailed: 'فشل التوصيل', submitProof: 'تسجيل إثبات التسليم',
+  noAssignments: 'لا توجد تعيينات', active: 'نشط',
+  status_PENDING: 'قيد الانتظار', status_QUOTED: 'تم التسعير', status_CONFIRMED: 'مؤكد', status_ASSIGNED: 'تم التعيين',
+  status_ACCEPTED: 'مقبول', status_ARRIVING_AT_PICKUP: 'في الطريق للاستلام', status_PICKED_UP: 'تم الاستلام',
+  status_IN_TRANSIT: 'قيد التوصيل', status_DELIVERED: 'تم التوصيل', status_FAILED: 'فشل', status_CANCELLED: 'ملغى',
+};
+const en: Record<keyof typeof ar, string> = {
+  appName: 'Delivery', customerApp: 'Delivery — Customer', driverApp: 'Delivery — Driver',
+  login: 'Login', register: 'Register', logout: 'Logout',
+  phone: 'Phone', password: 'Password', fullName: 'Full name',
+  home: 'Home', shop: 'Shop', send: 'Send', orders: 'My Orders', profile: 'Profile', cart: 'Cart',
+  shopFromStores: 'Shop from local stores', sendPackage: 'Send a package between two addresses',
+  stores: 'Stores', products: 'Products', addToCart: 'Add to cart', checkout: 'Checkout',
+  orderNow: 'Order now', subtotal: 'Subtotal', deliveryFee: 'Delivery fee', total: 'Total',
+  addresses: 'Addresses', addAddress: 'Add address', addressText: 'Address', label: 'Label (optional)',
+  newAddress: 'New address', save: 'Save', cancel: 'Cancel', confirm: 'Confirm', back: 'Back',
+  pickup: 'Pickup', destination: 'Destination', senderName: 'Sender name', senderPhone: 'Sender phone',
+  recipientName: 'Recipient name', recipientPhone: 'Recipient phone', packageDescription: 'Package description',
+  packageCategory: 'Category', packageSize: 'Size', weight: 'Weight (g)', getQuote: 'Get quote',
+  quotedPrice: 'Quoted price', createOrder: 'Create order', orderCreated: 'Order created',
+  orderNumber: 'Order number', orderDetails: 'Order details', trackOrder: 'Track order', noOrders: 'No orders',
+  status: 'Status', items: 'Items', quantity: 'Quantity', price: 'Price', loading: 'Loading...',
+  error: 'An error occurred', retry: 'Retry', emptyCart: 'Cart is empty', noStores: 'No stores',
+  noProducts: 'No products', search: 'Search', settings: 'Settings', apiBaseUrl: 'API base URL',
+  selectAddress: 'Select address', available: 'Available', outOfStock: 'Out of stock', language: 'Language',
+  driver: 'Driver', available_for_work: 'Available for work', unavailable: 'Unavailable', assignments: 'Assignments',
+  accept: 'Accept', decline: 'Decline', arriveAtPickup: 'Arrived at pickup', pickedUp: 'Picked up',
+  inTransit: 'In transit', markDelivered: 'Mark delivered', markFailed: 'Mark failed', submitProof: 'Submit proof',
+  noAssignments: 'No assignments', active: 'Active',
+  status_PENDING: 'Pending', status_QUOTED: 'Quoted', status_CONFIRMED: 'Confirmed', status_ASSIGNED: 'Assigned',
+  status_ACCEPTED: 'Accepted', status_ARRIVING_AT_PICKUP: 'Arriving at pickup', status_PICKED_UP: 'Picked up',
+  status_IN_TRANSIT: 'In transit', status_DELIVERED: 'Delivered', status_FAILED: 'Failed', status_CANCELLED: 'Cancelled',
+};
+
+export type TranslationKey = keyof typeof ar;
+export const translations = { ar, en };
+export function t(lang: Language, key: TranslationKey): string { return (translations[lang] as Record<TranslationKey, string>)[key] ?? (ar as Record<TranslationKey, string>)[key] ?? key; }
+export function statusLabel(lang: Language, status: string): string { return t(lang, `status_${status}` as TranslationKey); }
