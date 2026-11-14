@@ -1,0 +1,77 @@
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm/
+.yarn/
+.pnp.*
+
+# Env
+.env
+.env.*
+!.env.example
+*.local
+
+# Build
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# React Native / Expo
+.expo/
+.expo-shared/
+apps/*/android/app/build/
+apps/*/android/.gradle/
+apps/*/android/local.properties
+apps/*/android/*.keystore
+apps/*/android/*.jks
+apps/*/android/app/*.apk
+apps/*/android/app/*.aab
+apps/*/ios/Pods/
+apps/*/ios/build/
+
+# Android
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Backend
+backend/storage/
+backend/tmp/
+backend/logs/
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# Logs
+logs/
+*.log
+
+# Testing
+coverage/
+.nyc_output/
+
+# Cache
+.cache/
+.turbo/
+.parcel-cache/
+
+# Misc
+*.pid
+*.seed
