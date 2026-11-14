@@ -24,3 +24,22 @@
 ### Next action
 - Commit Phase 2 files.
 - Scaffold backend (Node + TS + Fastify + Prisma + PostgreSQL).
+
+## 2026-11-14 — Phase 3 completion (src + CI)
+
+### Added
+- backend/src/config.ts, server.ts, app.ts
+- backend/src/plugins/: prisma.ts, auth.ts, errorHandler.ts
+- backend/src/routes/: health.ts, auth.ts
+- backend/src/lib/: password.ts, phone.ts, orderNumber.ts
+- .github/workflows/backend-ci.yml (prisma validate + tsc --noEmit, no DB, no secrets)
+
+### Notes
+- Endpoints live: /health, /ready, /api/auth/register, /api/auth/login, /api/auth/me
+- JWT auth via @fastify/jwt; role in token payload
+- Zod validation; centralized error handler
+- No local npm install yet; CI installs on push
+
+### Next action
+- Push this commit; verify backend-ci passes on GitHub Actions.
+- Then Phase 4: stores/products/cart routes.
