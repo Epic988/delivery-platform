@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { Store, colors, fontSize, radius, spacing } from '@delivery/shared';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -12,29 +13,36 @@ export function StoresScreen() {
   const { lang } = useAuth();
   const [data, setData] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    api.stores({ pageSize: 50 }).then((r) => setData(r.data)).catch((e) => setErr(e.message)).finally(() => setLoading(false));
+    api.stores({ pageSize: 50 }).then((r) => setData(r.data)).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <View style={styles.center}><ActivityIndicator color={colors.primary} /></View>;
-  if (err) return <View style={styles.center}><Text style={{ color: colors.danger }}>{err}</Text></View>;
+  if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={colors.primary} /></View>;
 
   return (
     <FlatList
-      style={{ backgroundColor: colors.backgroundAlt }}
+      style={{ backgroundColor: colors.background }}
       contentContainerStyle={{ padding: spacing.lg }}
       data={data}
       keyExtractor={(s) => s.id}
-      ListEmptyComponent={<Text style={styles.empty}>{lang === 'ar' ? 'لا توجد متاجر' : 'No stores'}</Text>}
+      showsVerticalScrollIndicator={false}
+      ListEmptyComponent={<Text style={styles.empty}>{lang === 'ar' ? 'لا توجد متاجر متاحة' : 'No stores available'}</Text>}
       renderItem={({ item }) => (
         <Pressable style={styles.card} onPress={() => nav.navigate('StoreDetails', { slug: item.slug })}>
-          <Text style={styles.name}>{lang === 'ar' ? item.nameAr : item.nameEn ?? item.nameAr}</Text>
-          <Text style={styles.addr}>{item.addressText}</Text>
-          <Text style={[styles.status, { color: item.isOpen ? colors.success : colors.danger }]}>
-            {item.isOpen ? (lang === 'ar' ? 'مفتوح' : 'Open') : (lang === 'ar' ? 'مغلق' : 'Closed')}
-          </Text>
+          <View style={styles.storeImagePlaceholder}>
+             <Ionicons name="storefront" size={32} color={colors.primaryLight} />
+          </View>
+          <View style={styles.info}>
+            <Text style={styles.name}>{lang === 'ar' ? item.nameAr : item.nameEn ?? item.nameAr}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs }}>
+              <Ionicons name="location-outline" size={14} color={colors.textMuted} />
+              <Text style={styles.addr}>{item.addressText}</Text>
+            </View>
+          </View>
+          <View style={styles.arrow}>
+             <Ionicons name="chevron-back" size={20} color={colors.textMuted} />
+          </View>
         </Pressable>
       )}
     />
@@ -42,10 +50,12 @@ export function StoresScreen() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.backgroundAlt },
-  card: { backgroundColor: colors.background, padding: spacing.lg, borderRadius: radius.md, marginBottom: spacing.md, borderWidth: 1, borderColor: colors.border },
-  name: { fontSize: fontSize.lg, fontWeight: '700', color: colors.text },
-  addr: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: spacing.xs },
-  status: { fontSize: fontSize.sm, fontWeight: '600', marginTop: spacing.xs },
-  empty: { textAlign: 'center', color: colors.textMuted, marginTop: spacing.xxl },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background },
+  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, padding: spacing.md, borderRadius: radius.lg, marginBottom: spacing.md, borderWidth: 1, borderColor: colors.border },
+  storeImagePlaceholder: { width: 64, height: 64, borderRadius: radius.md, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center', marginLeft: spacing.md },
+  info: { flex: 1, marginLeft: spacing.md },
+  name: { fontSize: fontSize.lg, fontWeight: '800', color: colors.text },
+  addr: { fontSize: fontSize.sm, color: colors.textMuted, marginLeft: 4 },
+  arrow: { padding: spacing.sm },
+  empty: { textAlign: 'center', color: colors.textMuted, marginTop: spacing.xxl, fontSize: fontSize.md },
 });
