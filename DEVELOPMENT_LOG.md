@@ -221,3 +221,36 @@ Known issues still open:
 Not verified:
 - Real-device rendering.
 - GitHub Actions run IDs for 6b61735 / 004ea15 / 90061ab / this commit (none reported).
+
+## 2026-11-16 — Commit 5: CourierRequestScreen fixes
+
+Changes:
+- CourierRequestScreen.tsx rewritten.
+  - packageSize is read from form state (previously hardcoded to 'SMALL' at submit).
+  - Added size selector chips (ENVELOPE/SMALL/MEDIUM/LARGE/CUSTOM), bilingual.
+  - Local validation for all required fields before submit.
+  - Error and success shown as inline bilingual banners (previous version mixed
+    Arabic-only strings even when lang === 'en').
+  - Quote box shows the provisional price plus an explicit note that the final
+    price depends on pickup/destination locations (map integration pending).
+    The API call courierQuote({}) is unchanged — no fake coordinates or zoneId.
+  - api.courierQuote and api.createCourierOrder signatures unchanged.
+
+Bug fix carried over:
+- Recovery commit b5d1142 restored HomeScreen.tsx from 90061ab after 90a8ece
+  accidentally wrote the literal string "C:\Users\muhammed" into it (PowerShell
+  $home collision). Verified: tsc passes on b5d1142.
+
+Not changed:
+- AuthContext, api.ts, App.tsx, types.ts, backend routes, other screens.
+
+Known issues still open:
+- AddressesScreen still uses Alert.alert with hardcoded English 'Error' title
+  in the two catch branches. Cosmetic, not blocking. → Commit 6 cleanup.
+- StoreDetails preview navigates to Products (ProductDetails screen not built).
+- Home categories section removed (TODO).
+- migration_lock.toml missing under backend/prisma/migrations.
+
+Not verified:
+- Real-device rendering.
+- GitHub Actions run IDs for 6b61735 / 004ea15 / 90061ab / 90a8ece / b5d1142 / this commit.
