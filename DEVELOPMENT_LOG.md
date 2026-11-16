@@ -175,3 +175,49 @@ Not changed:
 Not verified:
 - Real-device rendering.
 - GitHub Actions run ID for Commit 2 (004ea15) and Commit 3 (pending).
+
+## 2026-11-16 — Commit 4: StoreDetails, Addresses CRUD, logoUrl bug fix
+
+Correction to Commit 3:
+- I used (s as any).imageUrl for Store, but the actual Store field is logoUrl
+  (typed in packages/shared/src/types.ts). That meant every store card fell back
+  to placeholder. Fixed in HomeScreen.tsx and StoresScreen.tsx: now use s.logoUrl.
+  Product.imageUrl was correct.
+
+Changes:
+- packages/shared/src/api.ts: added updateAddress (PATCH /addresses/:id) and
+  deleteAddress (DELETE /addresses/:id), matching backend/src/routes/addresses.ts
+  exactly. No backend endpoint invented.
+- StoreDetailsScreen.tsx: rewritten.
+  - Shows store.logoUrl (real image) or brand placeholder.
+  - Open/closed status pill.
+  - Description if present.
+  - Category chips now pass categoryId to Products (previously ignored).
+  - Featured products preview via api.products({ storeSlug, pageSize: 6 }),
+    using product.imageUrl.
+  - Separate loading / error / retry states for store and products.
+- AddressesScreen.tsx: rewritten.
+  - Read (existing) + Create (existing).
+  - Update via PATCH (label, addressText, isDefault) — inline edit form.
+  - Delete via DELETE with confirmation dialog.
+  - Set default via PATCH isDefault: true (backend also clears other defaults).
+  - Default badge on the default address.
+  - Bilingual COPY, error/empty/retry states, RTL-safe layout.
+
+Not changed:
+- AuthContext, Cart, Checkout, Orders, CourierRequest, driver screens, backend.
+- migration_lock.toml still absent (documented as known risk).
+
+Known issues still open:
+- CourierRequestScreen: packageSize hardcoded to SMALL at submit time
+  (f.packageSize is ignored); courierQuote({}) called with no payload;
+  success/error strings Arabic-only even in EN mode. → Commit 5.
+- ProductDetails route declared in types.ts but no screen or navigator entry exists.
+  StoreDetails preview navigates to Products instead. → Future milestone.
+- Home categories section still removed (TODO) pending a clean way to fetch and
+  render Category list; Category type is now confirmed but adding categories to Home
+  is separate from StoreDetails/Addresses. → Commit 4b.
+
+Not verified:
+- Real-device rendering.
+- GitHub Actions run IDs for 6b61735 / 004ea15 / 90061ab / this commit (none reported).

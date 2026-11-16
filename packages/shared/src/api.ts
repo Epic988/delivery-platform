@@ -53,7 +53,8 @@ export function createApiClient(cfg: ApiClientConfig) {
 
     addresses: () => request<{ data: Address[] }>('/api/addresses'),
     createAddress: (body: { addressText: string; label?: string; isDefault?: boolean }) => request<{ address: Address }>('/api/addresses', { method: 'POST', body: JSON.stringify(body) }),
-
+    updateAddress: (id: string, body: { label?: string; addressText?: string; city?: string; district?: string; lat?: number; lng?: number; notes?: string; isDefault?: boolean }) => request<{ address: Address }>(`/api/addresses/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    deleteAddress: (id: string) => request<void>(`/api/addresses/${id}`, { method: 'DELETE' }),
     carts: () => request<{ data: Cart[] }>('/api/carts'),
     addToCart: (storeId: string, body: { productId: string; quantity: number }) => request<{ item: CartItem; cartId: string }>(`/api/carts/${storeId}/items`, { method: 'POST', body: JSON.stringify(body) }),
     updateCartItem: (storeId: string, productId: string, quantity: number) => request<{ item: CartItem }>(`/api/carts/${storeId}/items/${productId}`, { method: 'PATCH', body: JSON.stringify({ quantity }) }),

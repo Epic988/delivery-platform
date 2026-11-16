@@ -71,7 +71,7 @@ export function StoresScreen() {
         </View>
       }
       renderItem={({ item }) => {
-        const imageUrl = (item as any).imageUrl as string | undefined;
+        const imageUrl = item.logoUrl ?? undefined;
         return (
           <Pressable style={styles.card} onPress={() => nav.navigate('StoreDetails', { slug: item.slug })}>
             {imageUrl ? (
