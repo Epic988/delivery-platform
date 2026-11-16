@@ -1,5 +1,6 @@
 Need to install the following packages:
 prisma@8.0.0-rc.33
+Ok to proceed? (y) 
 ALTER TABLE "ProofOfDelivery"
   ADD CONSTRAINT "proof_type_matches_ref" CHECK (
     ("orderType" = 'SHOPPING' AND "shoppingOrderId" IS NOT NULL AND "courierOrderId" IS NULL) OR
