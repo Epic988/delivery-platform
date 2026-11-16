@@ -7,7 +7,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Address, Store, colors, fontSize, radius, spacing } from '@delivery/shared';
+import { Address, Category, Store, colors, fontSize, radius, spacing } from '@delivery/shared';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import type { RootStackParamList } from '../types';
@@ -24,6 +24,7 @@ const COPY = {
     courierSub: 'Delivery between two addresses',
     shopTitle: 'Shop',
     shopSub: 'Browse local stores',
+    categoriesTitle: 'Categories',
     featuredTitle: 'Featured stores',
     seeAll: 'See all',
     noStores: 'No stores yet',
@@ -43,6 +44,7 @@ const COPY = {
     courierSub: 'توصيل بين عنوانين',
     shopTitle: 'تسوق',
     shopSub: 'تصفح المتاجر المحلية',
+    categoriesTitle: 'الفئات',
     featuredTitle: 'متاجر مميزة',
     seeAll: 'عرض الكل',
     noStores: 'لا توجد متاجر بعد',
@@ -64,6 +66,7 @@ export function HomeScreen() {
   const [stores, setStores] = useState<Store[]>([]);
   const [storesLoading, setStoresLoading] = useState(true);
   const [storesErr, setStoresErr] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadDefaultAddress = useCallback(async () => {
@@ -90,13 +93,26 @@ export function HomeScreen() {
     }
   }, [t.errStores]);
 
-  useEffect(() => { loadStores(); }, [loadStores]);
+  const loadCategories = useCallback(async () => {
+    try {
+      const r = await api.categories({});
+      const globals = r.data.filter((c) => !c.storeId);
+      setCategories(globals.slice(0, 8));
+    } catch {
+      setCategories([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadStores();
+    loadCategories();
+  }, [loadStores, loadCategories]);
 
   useFocusEffect(useCallback(() => { loadDefaultAddress(); }, [loadDefaultAddress]));
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([loadDefaultAddress(), loadStores()]);
+    await Promise.all([loadDefaultAddress(), loadStores(), loadCategories()]);
     setRefreshing(false);
   };
 
@@ -187,7 +203,32 @@ export function HomeScreen() {
           </Pressable>
         </View>
 
-        {/* TODO (Commit 3b): Categories section will be restored from api.categories({}) once Category type is confirmed. */}
+        {categories.length > 0 ? (
+          <>
+            <Text style={styles.sectionTitle}>{t.categoriesTitle}</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoryList}
+            >
+              {categories.map((c) => {
+                const name = lang === 'ar' ? c.nameAr : (c.nameEn ?? c.nameAr);
+                return (
+                  <Pressable
+                    key={c.id}
+                    style={styles.categoryItem}
+                    onPress={() => nav.navigate('Products', { categoryId: c.id, title: name })}
+                  >
+                    <View style={styles.categoryIconBg}>
+                      <Ionicons name="grid-outline" size={22} color={colors.primary} />
+                    </View>
+                    <Text style={styles.categoryName} numberOfLines={1}>{name}</Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </>
+        ) : null}
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{t.featuredTitle}</Text>
@@ -267,8 +308,12 @@ const styles = StyleSheet.create({
   serviceTitle: { fontSize: fontSize.lg, fontWeight: '800', color: '#fff' },
   serviceSub: { fontSize: fontSize.xs, color: '#ffffffdd', marginTop: 4 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
-  sectionTitle: { fontSize: fontSize.lg, fontWeight: '800', color: colors.text },
+  sectionTitle: { fontSize: fontSize.lg, fontWeight: '800', color: colors.text, marginBottom: spacing.md },
   seeAll: { color: colors.primary, fontSize: fontSize.sm, fontWeight: '600' },
+  categoryList: { gap: spacing.md, paddingBottom: spacing.xl },
+  categoryItem: { alignItems: 'center', width: 76 },
+  categoryIconBg: { width: 60, height: 60, borderRadius: 20, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.sm, borderWidth: 1, borderColor: colors.border },
+  categoryName: { fontSize: fontSize.xs, color: colors.text, fontWeight: '600', textAlign: 'center' },
   storesLoading: { paddingVertical: spacing.xl, alignItems: 'center' },
   storesEmpty: { paddingVertical: spacing.xl, alignItems: 'center', gap: spacing.sm },
   emptyText: { color: colors.textMuted, fontSize: fontSize.md, textAlign: 'center' },

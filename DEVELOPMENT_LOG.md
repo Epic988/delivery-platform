@@ -296,3 +296,16 @@ Known issues still open:
 Not verified:
 - Real-device rendering.
 - GitHub Actions run IDs for any commit since 6b61735.
+
+## 2026-11-16 — Commit 7: Restore Home categories from api.categories({})
+
+Changes:
+- HomeScreen.tsx: categories section restored (api.categories({}), client-filtered to global categories, max 8, horizontal chips).
+- Uses Store.logoUrl for featured store images (correct field, per packages/shared/src/types.ts).
+- Pull-to-refresh reloads categories.
+- Categories failure is silent (Home does not break).
+- No backend endpoint added. api.categories existed before this work.
+
+Not verified:
+- Real-device rendering.
+- GitHub Actions run ID for this commit.
