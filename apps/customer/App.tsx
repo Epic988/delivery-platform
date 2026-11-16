@@ -29,6 +29,13 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
 function MainTabs() {
+  const { lang } = useAuth();
+  const tabs = {
+    home: lang === 'ar' ? 'الرئيسية' : 'Home',
+    orders: lang === 'ar' ? 'طلباتي' : 'Orders',
+    cart: lang === 'ar' ? 'السلة' : 'Cart',
+    profile: lang === 'ar' ? 'حسابي' : 'Profile',
+  };
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -47,10 +54,10 @@ function MainTabs() {
         },
       })}
     >
-      <Tab.Screen name="HomeTab" component={HomeScreen} options={{ title: 'الرئيسية' }} />
-      <Tab.Screen name="OrdersTab" component={OrdersScreen} options={{ title: 'طلباتي' }} />
-      <Tab.Screen name="CartTab" component={CartScreen} options={{ title: 'السلة' }} />
-      <Tab.Screen name="ProfileTab" component={ProfileScreen} options={{ title: 'حسابي' }} />
+      <Tab.Screen name="HomeTab" component={HomeScreen} options={{ title: tabs.home }} />
+      <Tab.Screen name="OrdersTab" component={OrdersScreen} options={{ title: tabs.orders }} />
+      <Tab.Screen name="CartTab" component={CartScreen} options={{ title: tabs.cart }} />
+      <Tab.Screen name="ProfileTab" component={ProfileScreen} options={{ title: tabs.profile }} />
     </Tab.Navigator>
   );
 }
@@ -58,7 +65,6 @@ function MainTabs() {
 function RootNavigator() {
   const { ready, user, lang } = useAuth();
   const nav = {
-    register: lang === 'ar' ? 'إنشاء حساب' : 'Register',
     stores: lang === 'ar' ? 'المتاجر' : 'Stores',
     storeDetails: lang === 'ar' ? 'تفاصيل المتجر' : 'Store Details',
     products: lang === 'ar' ? 'المنتجات' : 'Products',
@@ -87,7 +93,7 @@ function RootNavigator() {
       {!user ? (
         <>
           <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="Register" component={RegisterScreen} options={{ title: nav.register }} />
+          <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
         </>
       ) : (
         <>

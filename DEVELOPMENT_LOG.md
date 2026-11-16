@@ -119,3 +119,32 @@ Changes:
 Not verified:
 - Real-device rendering (no emulator, no device).
 - GitHub Actions APK run ID for this commit (not yet pushed).
+
+## 2026-11-16 — Commit 2: Register + Profile redesign, MainTabs bilingual
+
+Changes:
+- RegisterScreen.tsx: rewritten with bilingual COPY, local validation
+  (name/phone/password min 6), error banner, safe-area insets, manual back arrow.
+  register(phone, fullName, password) unchanged.
+- ProfileScreen.tsx: rewritten with hero avatar, account card (name/phone),
+  language toggle, logout confirmation dialog, safe-area bottom padding, bilingual COPY.
+  logout() and setLang() unchanged.
+- App.tsx: MainTabs titles are lang-aware; Register stack screen headerless;
+  nav.register removed from RootNavigator nav object (no longer referenced).
+
+Backend note:
+- Password label changed from "8+ chars" to "6+ chars" to match client-side validation
+  (same minimum as Login). The backend minimum is not verified here. If backend requires
+  more, users will see the server error in the error banner.
+
+Still open (Commit 3+, needs more files):
+- HomeScreen.tsx: hardcoded "الخرطوم، السودان" location; 4 static categories that do
+  not navigate; search TextInput without onChangeText/onSubmitEditing; featured-stores
+  placeholder labeled "متجر تجريبي". Requires StoresScreen.tsx + ProductsScreen.tsx
+  (and AddressesScreen.tsx for default address lookup) to wire correctly.
+- StoreDetailsScreen / AddressesScreen / CourierRequestScreen (customer) not yet touched.
+- Driver LoginScreen / AssignmentDetailsScreen / ProofScreen not yet touched.
+
+Not verified:
+- Real-device rendering.
+- GitHub Actions run ID for this commit (not yet pushed).
