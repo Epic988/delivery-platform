@@ -92,3 +92,30 @@ Limitations:
 - No maps, no background GPS, no admin dashboard, no push.
 
 Next: deployment of backend, then Phase 6 admin dashboard.
+
+## 2026-11-16 — Commit 1: LoginScreen redesign + App.tsx bilingual titles + design state tokens
+
+Verification:
+- HEAD = a8bd914, working tree clean.
+- a8bd914 did NOT touch customer Login/Register/StoreDetails/Addresses/CourierRequest/Profile,
+  nor driver Login/AssignmentDetails/Proof. Those remain at the pre-redesign state.
+- migration_lock.toml is MISSING under backend/prisma/migrations. Do not deploy to a fresh Neon DB
+  until reviewed (Prisma normally creates this file).
+- react-native-maps 1.27.2 is installed in apps/customer/package.json. Expo Go preview is not a
+  reliable visual check for the customer app; verify UI via GitHub Actions APK builds only.
+- Two parallel Button/Input systems exist (apps/*/src/components vs packages/shared/src/components).
+  Not merged in this commit — flagged as tech debt.
+
+Changes:
+- packages/shared/src/design.ts: added dangerBg / successBg / warningBg / disabledBg / disabledText.
+  No existing token renamed.
+- apps/customer/src/screens/LoginScreen.tsx: rewritten with bilingual COPY, local validation,
+  error banner, KeyboardAvoidingView, safe-area insets. Auth flow login(phone, password) unchanged;
+  token storage keys unchanged.
+- apps/customer/App.tsx: added react-native import; RootNavigator now uses lang-aware titles and
+  shows an ActivityIndicator during auth hydration instead of an empty <></>. MainTabs untouched
+  (next commit). headerTintColor switched from '#fff' to colors.textOnPrimary.
+
+Not verified:
+- Real-device rendering (no emulator, no device).
+- GitHub Actions APK run ID for this commit (not yet pushed).

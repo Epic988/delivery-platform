@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { ActivityIndicator, View } from 'react-native';
 import { colors } from '@delivery/shared';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
@@ -55,29 +56,53 @@ function MainTabs() {
 }
 
 function RootNavigator() {
-  const { ready, user } = useAuth();
+  const { ready, user, lang } = useAuth();
+  const nav = {
+    register: lang === 'ar' ? 'إنشاء حساب' : 'Register',
+    stores: lang === 'ar' ? 'المتاجر' : 'Stores',
+    storeDetails: lang === 'ar' ? 'تفاصيل المتجر' : 'Store Details',
+    products: lang === 'ar' ? 'المنتجات' : 'Products',
+    addresses: lang === 'ar' ? 'العناوين' : 'Addresses',
+    checkout: lang === 'ar' ? 'الدفع' : 'Checkout',
+    courier: lang === 'ar' ? 'طلب توصيل' : 'Courier Request',
+    orderDetails: lang === 'ar' ? 'تفاصيل الطلب' : 'Order Details',
+  };
 
   if (!ready) {
-    return <></>; // Splash screen placeholder
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator color={colors.primary} size="large" />
+      </View>
+    );
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: colors.primary }, headerTintColor: '#fff', headerTitleStyle: { fontWeight: '700' } }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.primary },
+        headerTintColor: colors.textOnPrimary,
+        headerTitleStyle: { fontWeight: '700' },
+      }}
+    >
       {!user ? (
         <>
           <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="Register" component={RegisterScreen} options={{ title: 'إنشاء حساب' }} />
+          <Stack.Screen name="Register" component={RegisterScreen} options={{ title: nav.register }} />
         </>
       ) : (
         <>
           <Stack.Screen name="Home" component={MainTabs} options={{ headerShown: false }} />
-          <Stack.Screen name="Stores" component={StoresScreen} options={{ title: 'المتاجر' }} />
-          <Stack.Screen name="StoreDetails" component={StoreDetailsScreen} options={{ title: 'تفاصيل المتجر' }} />
-          <Stack.Screen name="Products" component={ProductsScreen} options={({ route }) => ({ title: route.params?.title ?? 'المنتجات' })} />
-          <Stack.Screen name="Addresses" component={AddressesScreen} options={{ title: 'العناوين' }} />
-          <Stack.Screen name="Checkout" component={CheckoutScreen} options={{ title: 'الدفع' }} />
-          <Stack.Screen name="CourierRequest" component={CourierRequestScreen} options={{ title: 'طلب توصيل' }} />
-          <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} options={{ title: 'تفاصيل الطلب' }} />
+          <Stack.Screen name="Stores" component={StoresScreen} options={{ title: nav.stores }} />
+          <Stack.Screen name="StoreDetails" component={StoreDetailsScreen} options={{ title: nav.storeDetails }} />
+          <Stack.Screen
+            name="Products"
+            component={ProductsScreen}
+            options={({ route }) => ({ title: route.params?.title ?? nav.products })}
+          />
+          <Stack.Screen name="Addresses" component={AddressesScreen} options={{ title: nav.addresses }} />
+          <Stack.Screen name="Checkout" component={CheckoutScreen} options={{ title: nav.checkout }} />
+          <Stack.Screen name="CourierRequest" component={CourierRequestScreen} options={{ title: nav.courier }} />
+          <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} options={{ title: nav.orderDetails }} />
         </>
       )}
     </Stack.Navigator>
