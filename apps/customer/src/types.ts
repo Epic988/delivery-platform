@@ -4,9 +4,9 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   Home: undefined;
-  Stores: undefined;
+  Stores: { q?: string } | undefined;
   StoreDetails: { slug: string };
-  Products: { storeSlug?: string; storeId?: string; title: string };
+  Products: { storeSlug?: string; storeId?: string; categoryId?: string; q?: string; title: string };
   ProductDetails: { id: string };
   Cart: undefined;
   Addresses: undefined;

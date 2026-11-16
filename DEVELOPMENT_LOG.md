@@ -148,3 +148,30 @@ Still open (Commit 3+, needs more files):
 Not verified:
 - Real-device rendering.
 - GitHub Actions run ID for this commit (not yet pushed).
+
+## 2026-11-16 — Commit 3: Home real data, Stores/Products search + filters
+
+Changes:
+- types.ts: Stores accepts { q?: string }; Products accepts { categoryId?: string; q?: string }.
+- HomeScreen.tsx: rewritten.
+  - Header shows default address from api.addresses(); tap navigates to Addresses.
+  - Featured stores loaded from api.stores({ pageSize: 6 }); tap → StoreDetails by slug.
+  - Search input controlled; submit navigates to Stores with { q }.
+  - Pull-to-refresh reloads address + stores.
+  - Uses (item as any).imageUrl when present, placeholder otherwise — no type changes.
+  - Categories section removed (TODO); will be restored from api.categories() in Commit 3b
+    once the Category type is confirmed. Avoids guessing field names.
+- StoresScreen.tsx: reads q from route; passes to api.stores({ q }); error+retry state;
+  RTL-aware margins and chevron direction; real imageUrl when present.
+- ProductsScreen.tsx: reads categoryId and q from route; passes to api.products(...);
+  error+retry state; real imageUrl when present; empty state.
+
+Not changed:
+- AuthContext, api.ts, backend routes, checkout, cart, orders, driver flow.
+- AddressesScreen (backend PATCH/DELETE still not wired) — Commit 4.
+- StoreDetailsScreen, CourierRequestScreen — Commit 4/5.
+- Driver Login / AssignmentDetails / Proof — Commit 6+.
+
+Not verified:
+- Real-device rendering.
+- GitHub Actions run ID for Commit 2 (004ea15) and Commit 3 (pending).
