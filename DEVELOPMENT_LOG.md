@@ -254,3 +254,45 @@ Known issues still open:
 Not verified:
 - Real-device rendering.
 - GitHub Actions run IDs for 6b61735 / 004ea15 / 90061ab / 90a8ece / b5d1142 / this commit.
+
+## 2026-11-16 — Commit 6: Driver UI polish (Login, AssignmentDetails, Proof, App)
+
+Fixes:
+- AssignmentDetailsScreen: the previous version used `.catch(() => {})` in the
+  load path, silently swallowing all API failures and showing "Not found" with
+  no way to distinguish network error from missing assignment. Fixed:
+  - Real error state with bilingual message + retry button.
+  - Separate load error and action error banners.
+  - Typo fix: "PackagePicked Up" -> "Package picked up".
+  - All Alert strings removed; status updates now surface via inline banner.
+  - Status pill on header card; bilingual COPY for all labels.
+  - No change to api.acceptAssignment / api.declineAssignment /
+    api.updateAssignmentStatus / api.driverAssignments calls.
+- ProofScreen: preserves api.submitProof(route.params.id, { recipientName, notes }).
+  - Success is now an inline confirmation screen (was Alert with empty body).
+  - Errors inline bilingual (was Alert with hardcoded 'Error' title).
+  - api.submitProof signature unchanged; empty strings normalized to undefined.
+- LoginScreen (driver): rewritten to match customer Login pattern —
+  bilingual COPY, local validation, error banner, KeyboardAvoidingView,
+  safe-area insets. Auth flow login(phone, password) unchanged.
+- App.tsx (driver): Stack screen titles now lang-aware; headerTintColor
+  switched from '#fff' to colors.textOnPrimary. I18nManager untouched.
+
+Not changed:
+- AuthContext, lib/api.ts, Button, Input, HomeScreen, backend, customer app,
+  react-native-maps dependency, package.json.
+- I18nManager.forceRTL(true) remains in App.tsx module scope (documented risk:
+  forces RTL layout regardless of user lang; not changed in this commit).
+
+Known issues still open:
+- AddressesScreen (customer): Alert.alert with hardcoded English 'Error' title
+  in setAsDefault and confirmDelete catch branches.
+- StoreDetails preview navigates to Products (ProductDetails screen not built).
+- Home categories section removed (TODO).
+- migration_lock.toml missing under backend/prisma/migrations.
+- I18nManager.forceRTL(true) in driver App.tsx — should be lang-aware or
+  removed, but that is a separate milestone with visual verification.
+
+Not verified:
+- Real-device rendering.
+- GitHub Actions run IDs for any commit since 6b61735.

@@ -19,17 +19,29 @@ try { I18nManager.forceRTL(true); } catch {}
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function Root() {
-  const { ready, user } = useAuth();
+  const { ready, user, lang } = useAuth();
+  const titles = {
+    home: lang === 'ar' ? 'توصيل — السائق' : 'Delivery — Driver',
+    assignment: lang === 'ar' ? 'التعيين' : 'Assignment',
+    proof: lang === 'ar' ? 'إثبات التسليم' : 'Proof of delivery',
+  };
+
   if (!ready) return <View style={styles.center}><ActivityIndicator size="large" color={colors.primary} /></View>;
   return (
-    <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: colors.primary }, headerTintColor: '#fff', headerTitleStyle: { fontWeight: '700' } }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.primary },
+        headerTintColor: colors.textOnPrimary,
+        headerTitleStyle: { fontWeight: '700' },
+      }}
+    >
       {!user ? (
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       ) : (
         <>
-          <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'توصيل — السائق' }} />
-          <Stack.Screen name="AssignmentDetails" component={AssignmentDetailsScreen} options={{ title: 'التعيين' }} />
-          <Stack.Screen name="Proof" component={ProofScreen} options={{ title: 'إثبات التسليم' }} />
+          <Stack.Screen name="Home" component={HomeScreen} options={{ title: titles.home }} />
+          <Stack.Screen name="AssignmentDetails" component={AssignmentDetailsScreen} options={{ title: titles.assignment }} />
+          <Stack.Screen name="Proof" component={ProofScreen} options={{ title: titles.proof }} />
         </>
       )}
     </Stack.Navigator>
