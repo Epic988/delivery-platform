@@ -83,3 +83,4 @@ apps/*/.expo/
 apps/*/*.tsbuildinfo
 
 
+*.bak
