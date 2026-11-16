@@ -20,31 +20,31 @@ export function CourierRequestScreen() {
   const [quote, setQuote] = useState<string | null>(null);
   const [quoting, setQuoting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const set = (k: keyof typeof f) => (v: string) => setF({ ...f, [k]: v });
 
   const getQuote = async () => {
-    setQuoting(true);
+    setErrorMsg(null); setQuoting(true);
     try {
       const r = await api.courierQuote({});
       setQuote(r.quotedPrice);
-    } catch (e: any) { Alert.alert('Error', e?.message ?? ''); }
+    } catch (e: any) { setErrorMsg(e?.message ?? 'Error fetching quote'); }
     finally { setQuoting(false); }
   };
 
   const submit = async () => {
-    setSubmitting(true);
+    setErrorMsg(null); setSuccessMsg(null); setSubmitting(true);
     try {
       const r = await api.createCourierOrder({
         ...f,
         packageSize: 'SMALL',
       });
-      Alert.alert(
-        lang === 'ar' ? 'تم' : 'Created',
-        r.order.orderNumber,
-        [{ text: 'OK', onPress: () => nav.reset({ index: 0, routes: [{ name: 'Home' }] }) }]
-      );
-    } catch (e: any) { Alert.alert('Error', e?.message ?? ''); }
+      setSuccessMsg(`تم إنشاء الطلب بنجاح! رقم الطلب: ${r.order.orderNumber}`);
+    } catch (e: any) { 
+      setErrorMsg(e?.message ?? 'حدث خطأ أثناء إنشاء الطلب. تأكد من ملء جميع الحقول وأن رقم الهاتف يبدأ بـ +249'); 
+    }
     finally { setSubmitting(false); }
   };
 
@@ -53,9 +53,9 @@ export function CourierRequestScreen() {
       <Text style={styles.heading}>{lang === 'ar' ? 'طلب توصيل' : 'Courier request'}</Text>
 
       <Input label={lang === 'ar' ? 'اسم المرسل' : 'Sender name'} value={f.senderName} onChangeText={set('senderName')} />
-      <Input label={lang === 'ar' ? 'هاتف المرسل (+249...)' : 'Sender phone'} value={f.senderPhone} onChangeText={set('senderPhone')} keyboardType="phone-pad" />
+      <Input label={lang === 'ar' ? 'هاتف المرسل (+249...)' : 'Sender phone'} value={f.senderPhone} onChangeText={set('senderPhone')} keyboardType="phone-pad" placeholder="+249912345678" />
       <Input label={lang === 'ar' ? 'اسم المستلم' : 'Recipient name'} value={f.recipientName} onChangeText={set('recipientName')} />
-      <Input label={lang === 'ar' ? 'هاتف المستلم (+249...)' : 'Recipient phone'} value={f.recipientPhone} onChangeText={set('recipientPhone')} keyboardType="phone-pad" />
+      <Input label={lang === 'ar' ? 'هاتف المستلم (+249...)' : 'Recipient phone'} value={f.recipientPhone} onChangeText={set('recipientPhone')} keyboardType="phone-pad" placeholder="+249912345678" />
       <Input label={lang === 'ar' ? 'وصف الطرد' : 'Package description'} value={f.packageDescription} onChangeText={set('packageDescription')} />
       <Input label={lang === 'ar' ? 'فئة الطرد' : 'Package category'} value={f.packageCategory} onChangeText={set('packageCategory')} />
       <Input label={lang === 'ar' ? 'عنوان الاستلام' : 'Pickup address'} value={f.pickupAddressText} onChangeText={set('pickupAddressText')} />
@@ -68,7 +68,14 @@ export function CourierRequestScreen() {
         </View>
       ) : null}
 
+      {errorMsg ? <Text style={styles.errorTxt}>{errorMsg}</Text> : null}
+      {successMsg ? <Text style={styles.successTxt}>{successMsg}</Text> : null}
+
       <Button title={lang === 'ar' ? 'إنشاء الطلب' : 'Create order'} onPress={submit} loading={submitting} style={{ marginTop: spacing.md }} />
+      
+      {successMsg ? (
+        <Button title={lang === 'ar' ? 'العودة للرئيسية' : 'Back to Home'} onPress={() => nav.navigate('Home')} variant="secondary" style={{ marginTop: spacing.sm }} />
+      ) : null}
     </ScrollView>
   );
 }
@@ -78,4 +85,6 @@ const styles = StyleSheet.create({
   heading: { fontSize: fontSize.xl, fontWeight: '700', color: colors.text, marginBottom: spacing.md },
   quoteBox: { backgroundColor: colors.primaryLight, padding: spacing.md, borderRadius: 10, marginTop: spacing.md },
   quoteTxt: { color: colors.primary, fontWeight: '600', textAlign: 'center' },
+  errorTxt: { color: colors.danger, textAlign: 'center', marginTop: spacing.md, fontWeight: '600' },
+  successTxt: { color: colors.success, textAlign: 'center', marginTop: spacing.md, fontWeight: '600' },
 });

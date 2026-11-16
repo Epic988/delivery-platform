@@ -19,8 +19,19 @@ export function createApiClient(cfg: ApiClientConfig) {
     if (token) headers.authorization = `Bearer ${token}`;
     const res = await fetch(`${cfg.baseUrl}${path}`, { ...init, headers });
     if (res.status === 204) return undefined as unknown as T;
-    const data = await res.json().catch(() => ({} as Record<string, unknown>));
-    if (!res.ok) throw new ApiError(res.status, (data as Record<string, string>).error ?? 'error', (data as Record<string, string>).message ?? res.statusText);
+    const data = await res.json().catch(() => ({} as Record<string, any>));
+    
+    if (!res.ok) {
+      let msg = data.message || data.error || res.statusText;
+      // استخراج أخطاء التحقق (Zod) وعرضها بشكل مفهوم
+      if (data.details && data.details.fieldErrors) {
+        const errors = Object.entries(data.details.fieldErrors)
+          .map(([field, errs]) => `${field}: ${(errs as string[]).join(', ')}`)
+          .join(' | ');
+        msg = `خطأ في البيانات - ${errors}`;
+      }
+      throw new ApiError(res.status, data.error ?? 'error', msg);
+    }
     return data as T;
   }
 
