@@ -14,7 +14,13 @@ function toQuery(params?: Record<string, unknown>): string {
 
 export function createApiClient(cfg: ApiClientConfig) {
   async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-    const headers: Record<string, string> = { 'content-type': 'application/json', ...((init.headers as Record<string, string>) ?? {}) };
+    const headers: Record<string, string> = { ...((init.headers as Record<string, string>) ?? {}) };
+    
+    // إرسال Content-Type فقط إذا كان هناك Body
+    if (init.body) {
+      headers['content-type'] = 'application/json';
+    }
+    
     const token = cfg.getToken?.();
     if (token) headers.authorization = `Bearer ${token}`;
     const res = await fetch(`${cfg.baseUrl}${path}`, { ...init, headers });
@@ -23,7 +29,6 @@ export function createApiClient(cfg: ApiClientConfig) {
     
     if (!res.ok) {
       let msg = data.message || data.error || res.statusText;
-      // استخراج أخطاء التحقق (Zod) وعرضها بشكل مفهوم
       if (data.details && data.details.fieldErrors) {
         const errors = Object.entries(data.details.fieldErrors)
           .map(([field, errs]) => `${field}: ${(errs as string[]).join(', ')}`)

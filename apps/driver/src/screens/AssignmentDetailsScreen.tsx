@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Assignment, colors, fontSize, radius, spacing, statusLabel } from '@delivery/shared';
@@ -17,33 +17,41 @@ export function AssignmentDetailsScreen() {
   const [a, setA] = useState<Assignment | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
     api.driverAssignments().then((r) => {
       const found = r.data.find((x) => x.id === route.params.id);
       setA(found ?? null);
-    }).finally(() => setLoading(false));
+    }).catch(() => {}).finally(() => setLoading(false));
   }, [route.params.id]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const doAction = async (action: 'accept' | 'decline') => {
     if (!a) return;
-    setBusy(true);
+    setBusy(true); setErrorMsg(null);
     try {
       if (action === 'accept') await api.acceptAssignment(a.id);
       else await api.declineAssignment(a.id);
       nav.goBack();
-    } catch (e: any) { Alert.alert('Error', e?.message ?? ''); }
+    } catch (e: any) { 
+      setErrorMsg(e?.message ?? 'حدث خطأ أثناء تنفيذ الإجراء'); 
+    }
     finally { setBusy(false); }
   };
 
   const doStatus = async (status: string) => {
     if (!a) return;
-    setBusy(true);
-    try { await api.updateAssignmentStatus(a.id, status); load(); }
-    catch (e: any) { Alert.alert('Error', e?.message ?? ''); }
+    setBusy(true); setErrorMsg(null);
+    try { 
+      await api.updateAssignmentStatus(a.id, status); 
+      load(); // تحديث الواجهة بعد النجاح
+    }
+    catch (e: any) { 
+      setErrorMsg(e?.message ?? 'حدث خطأ أثناء تحديث الحالة'); 
+    }
     finally { setBusy(false); }
   };
 
@@ -62,8 +70,6 @@ export function AssignmentDetailsScreen() {
         <View style={styles.info}>
           <Text style={styles.h}>{lang === 'ar' ? 'عنوان الاستلام' : 'Pickup'}</Text>
           <Text>{a.shoppingOrder.store?.nameAr ?? '—'}</Text>
-          <Text style={styles.h}>{lang === 'ar' ? 'التوصيل إلى' : 'Deliver to'}</Text>
-          <Text>{a.shoppingOrder.storeId}</Text>
         </View>
       ) : a.courierOrder ? (
         <View style={styles.info}>
@@ -75,6 +81,8 @@ export function AssignmentDetailsScreen() {
           <Text>{a.courierOrder.recipientName} — {a.courierOrder.recipientPhone}</Text>
         </View>
       ) : null}
+
+      {errorMsg ? <Text style={styles.errorTxt}>{errorMsg}</Text> : null}
 
       <View style={{ marginTop: spacing.lg, gap: spacing.sm }}>
         {a.status === 'ASSIGNED' ? (
@@ -113,4 +121,5 @@ const styles = StyleSheet.create({
   status: { fontSize: fontSize.md, color: colors.primary, fontWeight: '600', marginTop: spacing.xs },
   info: { marginTop: spacing.lg, backgroundColor: colors.background, padding: spacing.lg, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border },
   h: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: spacing.sm },
+  errorTxt: { color: colors.danger, textAlign: 'center', marginTop: spacing.md, fontWeight: '600' },
 });
