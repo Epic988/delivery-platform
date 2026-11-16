@@ -28,17 +28,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100" dir="rtl">
-      <form onSubmit={handleLogin} className="bg-white p-8 rounded-lg shadow-md w-96">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 text-gray-900" dir="rtl">
+      <form onSubmit={handleLogin} className="bg-white p-8 rounded-lg shadow-md w-96 border border-gray-200">
         <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">لوحة الإدارة</h1>
         {error && <div className="bg-red-100 text-red-700 p-2 mb-4 rounded text-sm">{error}</div>}
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2">رقم الهاتف</label>
-          <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="w-full p-2 border rounded" placeholder="+249..." dir="ltr" required />
+          <label className="block text-gray-800 font-bold mb-2">رقم الهاتف</label>
+          <input type="text" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+249..." dir="ltr" required className="w-full" />
         </div>
         <div className="mb-6">
-          <label className="block text-gray-700 mb-2">كلمة المرور</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-2 border rounded" required />
+          <label className="block text-gray-800 font-bold mb-2">كلمة المرور</label>
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)} required className="w-full" />
         </div>
         <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 disabled:opacity-50">
           {loading ? "جاري الدخول..." : "تسجيل الدخول"}
