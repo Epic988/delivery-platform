@@ -9,6 +9,7 @@ import type { RootStackParamList } from '../types';
 type Route = RouteProp<RootStackParamList, 'OrderDetails'>;
 
 export function OrderDetailsScreen() {
+  const [refreshKey, setRefreshKey] = useState(0);
   const { params } = useRoute<Route>();
   const { lang } = useAuth();
   const [order, setOrder] = useState<ShoppingOrder | CourierOrder | null>(null);
@@ -17,14 +18,19 @@ export function OrderDetailsScreen() {
   useEffect(() => {
     const call = params.type === 'SHOPPING' ? api.shoppingOrder(params.id) : api.courierOrder(params.id);
     call.then((r) => setOrder(r.order)).finally(() => setLoading(false));
-  }, [params.type, params.id]);
+  }, [params.type, params.id, refreshKey]);
 
   if (loading) return <View style={styles.center}><ActivityIndicator color={colors.primary} /></View>;
   if (!order) return <View style={styles.center}><Text>Not found</Text></View>;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: spacing.lg }}>
-      <Text style={styles.num}>{order.orderNumber}</Text>
+      <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+        <Text style={styles.num}>{order.orderNumber}</Text>
+        <Pressable onPress={() => setRefreshKey(k => k + 1)} style={{backgroundColor: colors.primaryLight, padding: 8, borderRadius: 8}}>
+          <Text style={{color: colors.primary, fontWeight: 'bold'}}>تحديث الحالة</Text>
+        </Pressable>
+      </View>
       <Text style={styles.status}>{statusLabel(lang, order.status)}</Text>
 
       {'items' in order && order.items ? (
@@ -74,3 +80,4 @@ const styles = StyleSheet.create({
   totals: { marginTop: spacing.lg, padding: spacing.lg, backgroundColor: colors.primaryLight, borderRadius: 10 },
   totalLabel: { fontSize: fontSize.lg, fontWeight: '700', color: colors.primary },
 });
+

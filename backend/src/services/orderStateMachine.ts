@@ -5,7 +5,7 @@ const ALLOWED: Record<OrderStatus, OrderStatus[]> = {
   QUOTED: ['CONFIRMED', 'CANCELLED'],
   CONFIRMED: ['ASSIGNED', 'CANCELLED'],
   ASSIGNED: ['ACCEPTED', 'CONFIRMED', 'CANCELLED'],
-  ACCEPTED: ['ARRIVING_AT_PICKUP', 'ASSIGNED', 'CANCELLED'],
+  ACCEPTED: ['ARRIVING_AT_PICKUP', 'PICKED_UP', 'ASSIGNED', 'CANCELLED'],
   ARRIVING_AT_PICKUP: ['PICKED_UP', 'FAILED', 'CANCELLED'],
   PICKED_UP: ['IN_TRANSIT', 'FAILED', 'CANCELLED'],
   IN_TRANSIT: ['DELIVERED', 'FAILED'],
@@ -23,3 +23,4 @@ export function assertTransition(from: OrderStatus, to: OrderStatus): void {
     throw Object.assign(new Error(`invalid_transition:${from}->${to}`), { statusCode: 409 });
   }
 }
+

@@ -91,20 +91,14 @@ export function AssignmentDetailsScreen() {
             <Button title={lang === 'ar' ? 'رفض' : 'Decline'} onPress={() => doAction('decline')} variant="danger" loading={busy} />
           </>
         ) : null}
-        {a.status === 'ACCEPTED' && orderStatus === 'ACCEPTED' ? (
-          <Button title={lang === 'ar' ? 'وصلت لمكان الاستلام' : 'Arrived at pickup'} onPress={() => doStatus('ARRIVING_AT_PICKUP')} loading={busy} />
+        {a.status === 'ACCEPTED' || orderStatus === 'ARRIVING_AT_PICKUP' ? (
+          <Button title={lang === 'ar' ? 'تم استلام الطرد من المتجر' : 'Package Picked Up'} onPress={() => doStatus('PICKED_UP')} loading={busy} />
         ) : null}
-        {orderStatus === 'ARRIVING_AT_PICKUP' ? (
-          <Button title={lang === 'ar' ? 'تم استلام الطرد' : 'Picked up'} onPress={() => doStatus('PICKED_UP')} loading={busy} />
-        ) : null}
+        
+        
+        
         {orderStatus === 'PICKED_UP' ? (
-          <Button title={lang === 'ar' ? 'قيد التوصيل' : 'In transit'} onPress={() => doStatus('IN_TRANSIT')} loading={busy} />
-        ) : null}
-        {orderStatus === 'IN_TRANSIT' ? (
-          <>
-            <Button title={lang === 'ar' ? 'تم التوصيل' : 'Delivered'} onPress={() => doStatus('DELIVERED')} variant="success" loading={busy} />
-            <Button title={lang === 'ar' ? 'فشل' : 'Failed'} onPress={() => doStatus('FAILED')} variant="danger" loading={busy} />
-          </>
+          <Button title={lang === 'ar' ? 'تم التوصيل للعميل' : 'Delivered to Customer'} onPress={() => doStatus('DELIVERED')} variant="success" loading={busy} />
         ) : null}
         {orderStatus === 'DELIVERED' ? (
           <Button title={lang === 'ar' ? 'إثبات التسليم' : 'Proof of delivery'} onPress={() => nav.navigate('Proof', { id: a.id })} variant="secondary" />
@@ -123,3 +117,4 @@ const styles = StyleSheet.create({
   h: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: spacing.sm },
   errorTxt: { color: colors.danger, textAlign: 'center', marginTop: spacing.md, fontWeight: '600' },
 });
+
