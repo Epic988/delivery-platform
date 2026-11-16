@@ -238,6 +238,21 @@ const adminRoutes: FastifyPluginAsync = async (app) => {
     });
     return reply.status(201).send({ assignment });
   });
-};
 
+  app.get('/admin/courier-orders', admin, async () => {
+    const data = await app.prisma.courierOrder.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: { customer: { select: { fullName: true, phone: true } } }
+    });
+    return { data };
+  });
+
+  app.get('/admin/drivers-list', admin, async () => {
+    const data = await app.prisma.driver.findMany({
+      include: { user: { select: { fullName: true, phone: true } } }
+    });
+    return { data };
+  });
+};
 export default adminRoutes;
+
