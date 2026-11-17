@@ -68,19 +68,39 @@ async function reverseGeocode(lat: number, lng: number, lang: 'ar' | 'en'): Prom
     });
     if (!res.ok) return null;
     const data = await res.json();
-    const a = data?.address ?? {};
-    const parts = [
-      a.amenity || a.shop || a.tourism || a.leisure,
-      a.residential || a.suburb || a.neighbourhood || a.quarter,
-      a.road,
-      a.city || a.town || a.village || a.municipality,
-      a.county || a.state_district,
-      a.state,
-    ].filter((x): x is string => typeof x === 'string' && x.length > 0);
+    if (!data || !data.address) return null;
+
+    const a = data.address;
+    
+    // Priority 1: Specific POI or Building name
+    const poiName = data.name || a.amenity || a.shop || a.tourism || a.leisure || a.building;
+    // Priority 2: Street/Road
+    const street = a.road || a.pedestrian || a.footway;
+    // Priority 3: Neighborhood/Area
+    const area = a.neighbourhood || a.suburb || a.quarter || a.residential || a.village;
+    // Priority 4: City
+    const city = a.city || a.town || a.municipality;
+    // Priority 5: State
+    const state = a.state;
+
+    const parts = [poiName, street, area, city, state].filter((x): x is string => typeof x === 'string' && x.length > 0);
     const unique = Array.from(new Set(parts));
-    if (!unique.length) return null;
     const sep = lang === 'ar' ? '، ' : ', ';
-    return unique.slice(0, 3).join(sep);
+
+    if (unique.length > 0) {
+      return unique.slice(0, 3).join(sep);
+    }
+
+    // Fallback: Use display_name and strip country
+    if (data.display_name) {
+      const displayParts = data.display_name.split(',').map((s: string) => s.trim());
+      if (displayParts.length > 1 && (displayParts[displayParts.length - 1] === 'السودان' || displayParts[displayParts.length - 1] === 'Sudan')) {
+        displayParts.pop();
+      }
+      return displayParts.slice(0, 3).join(sep);
+    }
+
+    return null;
   } catch {
     return null;
   }
