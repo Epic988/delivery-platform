@@ -3,10 +3,11 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { useFocusEffect, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { Assignment, colors, fontSize, radius, spacing, statusLabel } from '@delivery/shared';
+import { Assignment, CourierOrder, colors, fontSize, radius, spacing, statusLabel } from '@delivery/shared';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/Button';
+import { MapPreview } from '../components/MapPreview';
 import type { RootStackParamList } from '../types';
 
 type Route = RouteProp<RootStackParamList, 'AssignmentDetails'>;
@@ -28,6 +29,8 @@ const COPY = {
     errAction: 'Action failed',
     errStatus: 'Status update failed',
     busy: 'Working...',
+    mapLegendPickup: 'Pickup',
+    mapLegendDest: 'Destination',
   },
   ar: {
     pickup: 'عنوان الاستلام',
@@ -45,8 +48,22 @@ const COPY = {
     errAction: 'فشل تنفيذ الإجراء',
     errStatus: 'فشل تحديث الحالة',
     busy: 'جارٍ التنفيذ...',
+    mapLegendPickup: 'الاستلام',
+    mapLegendDest: 'التوصيل',
   },
 } as const;
+
+function getCourierCoords(c: CourierOrder | null | undefined) {
+  if (!c) return null;
+  if (c.pickupLat == null || c.pickupLng == null) return null;
+  if (c.destinationLat == null || c.destinationLng == null) return null;
+  return {
+    pickupLat: c.pickupLat,
+    pickupLng: c.pickupLng,
+    destLat: c.destinationLat,
+    destLng: c.destinationLng,
+  };
+}
 
 export function AssignmentDetailsScreen() {
   const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -129,6 +146,7 @@ export function AssignmentDetailsScreen() {
 
   const order = a.shoppingOrder ?? a.courierOrder;
   const orderStatus = order?.status ?? '';
+  const coords = getCourierCoords(a.courierOrder);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxl }}>
@@ -152,6 +170,27 @@ export function AssignmentDetailsScreen() {
           <Text style={styles.value}>{a.courierOrder.destinationAddressText}</Text>
           <Text style={[styles.label, { marginTop: spacing.md }]}>{t.recipient}</Text>
           <Text style={styles.value}>{a.courierOrder.recipientName} — {a.courierOrder.recipientPhone}</Text>
+
+          {coords ? (
+            <View style={{ marginTop: spacing.md }}>
+              <MapPreview
+                pickupLat={coords.pickupLat}
+                pickupLng={coords.pickupLng}
+                destLat={coords.destLat}
+                destLng={coords.destLng}
+              />
+              <View style={styles.legend}>
+                <View style={styles.legendItem}>
+                  <View style={[styles.dot, { backgroundColor: colors.primary }]} />
+                  <Text style={styles.legendTxt}>{t.mapLegendPickup}</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.dot, { backgroundColor: '#E6A23C' }]} />
+                  <Text style={styles.legendTxt}>{t.mapLegendDest}</Text>
+                </View>
+              </View>
+            </View>
+          ) : null}
         </View>
       ) : null}
 
@@ -198,7 +237,11 @@ const styles = StyleSheet.create({
   statusTxt: { color: colors.primary, fontWeight: '700', fontSize: fontSize.sm },
   infoCard: { backgroundColor: colors.surface, padding: spacing.lg, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border },
   label: { fontSize: fontSize.xs, color: colors.textMuted, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
-  value: { fontSize: fontSize.md, color: colors.text, marginTop: 4, fontWeight: '600' },
+  value: { fontSize: fontSize.md, color: colors.text, marginTop: 4, fontWeight:'600' },
+  legend: { flexDirection: 'row', justifyContent: 'center', gap: spacing.lg, marginTop: spacing.sm },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  dot: { width: 10, height: 10, borderRadius: 5 },
+  legendTxt: { fontSize: fontSize.xs, color: colors.textMuted, fontWeight: '700' },
   errorBanner: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: colors.dangerBg, padding: spacing.md, borderRadius: radius.md, marginTop: spacing.md },
   errorTxt: { color: colors.danger, fontWeight: '600', flex: 1, fontSize: fontSize.sm },
 });
