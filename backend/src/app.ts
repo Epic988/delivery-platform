@@ -39,6 +39,7 @@ export async function buildApp() {
     max: 120,
     timeWindow: '1 minute',
     keyGenerator: (req) => req.ip,
+    allowList: (req) => req.url === '/api/auth/login',
   });
 
   await app.register(prismaPlugin);
