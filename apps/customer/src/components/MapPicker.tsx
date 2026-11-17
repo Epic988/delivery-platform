@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, radius, spacing } from '@delivery/shared';
@@ -47,8 +47,11 @@ function buildHtml(lat: number, lng: number): string {
   }
   map.on('click', function(e) {
     setMarker(e.latlng.lat, e.latlng.lng);
+    var payload = JSON.stringify({ lat: e.latlng.lat, lng: e.latlng.lng });
     if (window.ReactNativeWebView) {
-      window.ReactNativeWebView.postMessage(JSON.stringify({ lat: e.latlng.lat, lng: e.latlng.lng }));
+      window.ReactNativeWebView.postMessage(payload);
+    } else if (window.parent && window.parent !== window) {
+      window.parent.postMessage(payload, '*');
     }
   });
 </script>
@@ -71,6 +74,20 @@ export function MapPicker(props: MapPickerProps) {
     }
   }, [visible]);
 
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const handler = (e: any) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (typeof data.lat === 'number' && typeof data.lng === 'number') {
+          setPicked({ lat: data.lat, lng: data.lng });
+        }
+      } catch {}
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
   const onMessage = (event: { nativeEvent: { data: string } }) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
@@ -91,15 +108,23 @@ export function MapPicker(props: MapPickerProps) {
           <View style={styles.headerBtn} />
         </View>
 
-        <WebView
-          key={reloadKey}
-          originWhitelist={['*']}
-          source={{ html }}
-          onMessage={onMessage}
-          javaScriptEnabled
-          domStorageEnabled
-          startInLoadingState
-        />
+        {Platform.OS === 'web'
+          ? React.createElement('iframe', {
+              srcDoc: html,
+              style: { border: 'none', width: '100%', height: '100%', flex: 1 },
+            })
+          : (
+            <WebView
+              key={reloadKey}
+              originWhitelist={['*']}
+              source={{ html }}
+              onMessage={onMessage}
+              javaScriptEnabled
+              domStorageEnabled
+              startInLoadingState
+            />
+          )
+        }
 
         <View style={styles.footer}>
           <Text style={styles.hint}>{hintLabel}</Text>
