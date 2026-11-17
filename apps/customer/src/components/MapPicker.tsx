@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
@@ -55,24 +55,32 @@ function buildHtml(lat: number, lng: number): string {
 </html>`;
 }
 
+// Nominatim (OpenStreetMap) reverse geocoding - supports Arabic, free, no API key.
+// Rate limit: <= 1 request/second per client. Debounced in handlePick below.
 async function reverseGeocode(lat: number, lng: number, lang: 'ar' | 'en'): Promise<string | null> {
   try {
-    const url = `https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&lang=${lang}&limit=1`;
-    const res = await fetch(url);
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=jsonv2&accept-language=${lang}&addressdetails=1`;
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'DeliveryCustomer/0.1.0',
+        'Accept': 'application/json',
+      },
+    });
     if (!res.ok) return null;
     const data = await res.json();
-    const f = data?.features?.[0];
-    if (!f) return null;
-    const p = f.properties ?? {};
+    const a = data?.address ?? {};
     const parts = [
-      p.name,
-      p.street ? (p.housenumber ? `${p.street} ${p.housenumber}` : p.street) : null,
-      p.district,
-      p.city || p.town || p.village,
-      p.state,
-    ].filter((x) => typeof x === 'string' && x.length > 0);
-    const unique = Array.from(new Set(parts as string[]));
-    return unique.length ? unique.slice(0, 3).join(', ') : null;
+      a.amenity || a.shop || a.tourism || a.leisure,
+      a.residential || a.suburb || a.neighbourhood || a.quarter,
+      a.road,
+      a.city || a.town || a.village || a.municipality,
+      a.county || a.state_district,
+      a.state,
+    ].filter((x): x is string => typeof x === 'string' && x.length > 0);
+    const unique = Array.from(new Set(parts));
+    if (!unique.length) return null;
+    const sep = lang === 'ar' ? '، ' : ', ';
+    return unique.slice(0, 3).join(sep);
   } catch {
     return null;
   }
@@ -84,6 +92,8 @@ export function MapPicker(props: MapPickerProps) {
   const [suggested, setSuggested] = useState<string | null>(null);
   const [loadingAddr, setLoadingAddr] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const seqRef = useRef(0);
   const startLat = typeof initialLat === 'number' ? initialLat : DEFAULT_LAT;
   const startLng = typeof initialLng === 'number' ? initialLng : DEFAULT_LNG;
   const html = useMemo(() => buildHtml(startLat, startLng), [startLat, startLng]);
@@ -96,13 +106,24 @@ export function MapPicker(props: MapPickerProps) {
     }
   }, [visible]);
 
-  const handlePick = async (lat: number, lng: number) => {
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
+  const handlePick = (lat: number, lng: number) => {
     setPicked({ lat, lng });
     setSuggested(null);
     setLoadingAddr(true);
-    const addr = await reverseGeocode(lat, lng, lang);
-    setSuggested(addr);
-    setLoadingAddr(false);
+    const mySeq = ++seqRef.current;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      const addr = await reverseGeocode(lat, lng, lang);
+      if (seqRef.current !== mySeq) return;
+      setSuggested(addr);
+      setLoadingAddr(false);
+    }, 500);
   };
 
   useEffect(() => {
