@@ -26,6 +26,11 @@ const storeCreateSchema = z
     isActive: z.boolean().optional(),
     isOpen: z.boolean().optional(),
     commissionRate: z.number().min(0).max(100).optional(),
+    coverUrl: z.string().url().optional(),
+    images: z.array(z.string().url()).max(15).optional(),
+    cuisineType: z.string().max(60).optional(),
+    estimatedPrepMinutes: z.number().int().positive().max(240).optional(),
+    minOrderAmount: z.number().nonnegative().optional(),
   })
   .strict();
 
@@ -42,6 +47,11 @@ const productCreateSchema = z
     isAvailable: z.boolean().optional(),
     stock: z.number().int().nonnegative().optional(),
     weightGrams: z.number().int().nonnegative().optional(),
+    images: z.array(z.string().url()).max(10).optional(),
+    variants: z.array(z.object({
+      label: z.string().min(1).max(50),
+      price: z.number().positive(),
+    })).max(20).optional(),
   })
   .strict();
 
@@ -184,6 +194,8 @@ const adminRoutes: FastifyPluginAsync = async (app) => {
         isAvailable: body.isAvailable ?? true,
         stock: body.stock,
         weightGrams: body.weightGrams,
+        images: body.images,
+        variants: body.variants,
       },
     });
     return reply.status(201).send({ product });

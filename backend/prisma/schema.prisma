@@ -164,6 +164,11 @@ model Store {
   isOpen         Boolean  @default(true)
   openingHours   Json?
   commissionRate Decimal  @default(0) @db.Decimal(5, 2)
+  coverUrl             String?
+  images               Json?
+  cuisineType          String?
+  estimatedPrepMinutes Int?
+  minOrderAmount       Decimal? @db.Decimal(12, 2)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -213,6 +218,8 @@ model Product {
   isAvailable    Boolean   @default(true)
   stock          Int?
   weightGrams    Int?
+  images         Json?
+  variants       Json?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
