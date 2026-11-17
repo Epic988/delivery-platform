@@ -313,12 +313,19 @@ export function CourierRequestScreen() {
         confirmLabel={t.mapConfirm}
         cancelLabel={t.mapCancel}
         hintLabel={t.mapHint}
+        lang={lang === 'ar' ? 'ar' : 'en'}
         initialLat={mapFor === 'pickup' ? pickupCoords?.lat : destCoords?.lat}
         initialLng={mapFor === 'pickup' ? pickupCoords?.lng : destCoords?.lng}
         onCancel={() => setMapFor(null)}
-        onConfirm={(lat, lng) => {
-          if (mapFor === 'pickup') setPickupCoords({ lat, lng });
-          if (mapFor === 'destination') setDestCoords({ lat, lng });
+        onConfirm={(lat, lng, suggested) => {
+          if (mapFor === 'pickup') {
+            setPickupCoords({ lat, lng });
+            if (!pickupAddressText.trim() && suggested) setPickupAddressText(suggested);
+          }
+          if (mapFor === 'destination') {
+            setDestCoords({ lat, lng });
+            if (!destinationAddressText.trim() && suggested) setDestinationAddressText(suggested);
+          }
           setMapFor(null);
         }}
       />

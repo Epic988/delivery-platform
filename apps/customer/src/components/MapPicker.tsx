@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, radius, spacing } from '@delivery/shared';
@@ -11,12 +11,12 @@ export interface MapPickerProps {
   visible: boolean;
   title: string;
   confirmLabel: string;
-  cancelLabel: string;
   hintLabel: string;
+  lang: 'ar' | 'en';
   initialLat?: number | null;
   initialLng?: number | null;
   onCancel: () => void;
-  onConfirm: (lat: number, lng: number) => void;
+  onConfirm: (lat: number, lng: number, suggestedAddress: string | null) => void;
 }
 
 function buildHtml(lat: number, lng: number): string {
@@ -41,27 +41,48 @@ function buildHtml(lat: number, lng: number): string {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
   var marker = null;
-  function setMarker(la, ln) {
-    if (marker) { map.removeLayer(marker); }
-    marker = L.marker([la, ln]).addTo(map);
+  function send(p) {
+    if (window.ReactNativeWebView) { window.ReactNativeWebView.postMessage(p); }
+    else if (window.parent && window.parent !== window) { window.parent.postMessage(p, '*'); }
   }
   map.on('click', function(e) {
-    setMarker(e.latlng.lat, e.latlng.lng);
-    var payload = JSON.stringify({ lat: e.latlng.lat, lng: e.latlng.lng });
-    if (window.ReactNativeWebView) {
-      window.ReactNativeWebView.postMessage(payload);
-    } else if (window.parent && window.parent !== window) {
-      window.parent.postMessage(payload, '*');
-    }
+    if (marker) { map.removeLayer(marker); }
+    marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+    send(JSON.stringify({ lat: e.latlng.lat, lng: e.latlng.lng }));
   });
 </script>
 </body>
 </html>`;
 }
 
+async function reverseGeocode(lat: number, lng: number, lang: 'ar' | 'en'): Promise<string | null> {
+  try {
+    const url = `https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&lang=${lang}&limit=1`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const f = data?.features?.[0];
+    if (!f) return null;
+    const p = f.properties ?? {};
+    const parts = [
+      p.name,
+      p.street ? (p.housenumber ? `${p.street} ${p.housenumber}` : p.street) : null,
+      p.district,
+      p.city || p.town || p.village,
+      p.state,
+    ].filter((x) => typeof x === 'string' && x.length > 0);
+    const unique = Array.from(new Set(parts as string[]));
+    return unique.length ? unique.slice(0, 3).join(', ') : null;
+  } catch {
+    return null;
+  }
+}
+
 export function MapPicker(props: MapPickerProps) {
-  const { visible, title, confirmLabel, hintLabel, initialLat, initialLng, onCancel, onConfirm } = props;
+  const { visible, title, confirmLabel, hintLabel, lang, initialLat, initialLng, onCancel, onConfirm } = props;
   const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(null);
+  const [suggested, setSuggested] = useState<string | null>(null);
+  const [loadingAddr, setLoadingAddr] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const startLat = typeof initialLat === 'number' ? initialLat : DEFAULT_LAT;
   const startLng = typeof initialLng === 'number' ? initialLng : DEFAULT_LNG;
@@ -70,9 +91,19 @@ export function MapPicker(props: MapPickerProps) {
   useEffect(() => {
     if (visible) {
       setPicked(null);
+      setSuggested(null);
       setReloadKey((k) => k + 1);
     }
   }, [visible]);
+
+  const handlePick = async (lat: number, lng: number) => {
+    setPicked({ lat, lng });
+    setSuggested(null);
+    setLoadingAddr(true);
+    const addr = await reverseGeocode(lat, lng, lang);
+    setSuggested(addr);
+    setLoadingAddr(false);
+  };
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
@@ -80,19 +111,19 @@ export function MapPicker(props: MapPickerProps) {
       try {
         const data = JSON.parse(e.data);
         if (typeof data.lat === 'number' && typeof data.lng === 'number') {
-          setPicked({ lat: data.lat, lng: data.lng });
+          handlePick(data.lat, data.lng);
         }
       } catch {}
     };
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, []);
+  }, [lang]);
 
   const onMessage = (event: { nativeEvent: { data: string } }) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
       if (typeof data.lat === 'number' && typeof data.lng === 'number') {
-        setPicked({ lat: data.lat, lng: data.lng });
+        handlePick(data.lat, data.lng);
       }
     } catch {}
   };
@@ -110,6 +141,7 @@ export function MapPicker(props: MapPickerProps) {
 
         {Platform.OS === 'web'
           ? React.createElement('iframe', {
+              key: reloadKey,
               srcDoc: html,
               style: { border: 'none', width: '100%', height: '100%', flex: 1 },
             })
@@ -133,9 +165,19 @@ export function MapPicker(props: MapPickerProps) {
               {picked.lat.toFixed(5)}, {picked.lng.toFixed(5)}
             </Text>
           ) : null}
+          {loadingAddr ? (
+            <View style={styles.addrRow}>
+              <ActivityIndicator size="small" color={colors.primary} />
+              <Text style={styles.addrLoading}>{lang === 'ar' ? 'جارٍ جلب اسم الموقع…' : 'Fetching place name…'}</Text>
+            </View>
+          ) : suggested ? (
+            <Text style={styles.addr}>{suggested}</Text>
+          ) : picked ? (
+            <Text style={styles.addrEmpty}>{lang === 'ar' ? 'لا يوجد اسم لهذا الموقع' : 'No name found for this location'}</Text>
+          ) : null}
           <TouchableOpacity
             disabled={!picked}
-            onPress={() => picked && onConfirm(picked.lat, picked.lng)}
+            onPress={() => picked && onConfirm(picked.lat, picked.lng, suggested)}
             style={[styles.confirmBtn, !picked && styles.confirmDisabled]}
             activeOpacity={0.85}
           >
@@ -162,6 +204,10 @@ const styles = StyleSheet.create({
   },
   hint: { fontSize: fontSize.sm, color: colors.textMuted, textAlign: 'center' },
   coords: { fontSize: fontSize.md, fontWeight: '800', color: colors.primary, textAlign: 'center' },
+  addr: { fontSize: fontSize.sm, color: colors.text, textAlign: 'center', fontWeight: '600' },
+  addrEmpty: { fontSize: fontSize.xs, color: colors.textMuted, textAlign: 'center', fontStyle: 'italic' },
+  addrRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
+  addrLoading: { fontSize: fontSize.xs, color: colors.textMuted },
   confirmBtn: {
     backgroundColor: colors.primary, paddingVertical: spacing.md,
     borderRadius: radius.md, alignItems: 'center', marginTop: spacing.xs,
