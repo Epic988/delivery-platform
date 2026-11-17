@@ -311,7 +311,6 @@ export function CourierRequestScreen() {
         visible={mapFor !== null}
         title={mapFor === 'pickup' ? t.pickupMapTitle : t.destMapTitle}
         confirmLabel={t.mapConfirm}
-        cancelLabel={t.mapCancel}
         hintLabel={t.mapHint}
         lang={lang === 'ar' ? 'ar' : 'en'}
         initialLat={mapFor === 'pickup' ? pickupCoords?.lat : destCoords?.lat}
