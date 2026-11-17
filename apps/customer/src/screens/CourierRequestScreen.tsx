@@ -28,8 +28,8 @@ const COPY = {
     packageDescription: 'Package description',
     packageCategory: 'Package category',
     packageSizeLabel: 'Package size',
-    pickupAddress: 'Pickup address',
-    destinationAddress: 'Destination address',
+    pickupAddress: 'Pickup address (landmark / street details)',
+    destinationAddress: 'Destination address (landmark / street details)',
     quoteBtn: 'Get quote',
     createBtn: 'Create order',
     backHome: 'Back to home',
@@ -59,7 +59,7 @@ const COPY = {
     changeLocation: 'Change location',
     pickupMapTitle: 'Pickup location',
     destMapTitle: 'Destination location',
-    mapHint: 'Tap on the map to place a marker',
+    mapHint: 'Tap on the map to pin location, then add street details below',
     mapConfirm: 'Confirm location',
     mapCancel: 'Cancel',
   },
@@ -77,8 +77,8 @@ const COPY = {
     packageDescription: 'وصف الطرد',
     packageCategory: 'فئة الطرد',
     packageSizeLabel: 'حجم الطرد',
-    pickupAddress: 'عنوان الاستلام',
-    destinationAddress: 'عنوان التوصيل',
+    pickupAddress: 'عنوان الاستلام (أقرب معلم / تفاصيل الشارع)',
+    destinationAddress: 'عنوان التوصيل (أقرب معلم / تفاصيل الشارع)',
     quoteBtn: 'احسب السعر',
     createBtn: 'إنشاء الطلب',
     backHome: 'العودة للرئيسية',
@@ -108,7 +108,7 @@ const COPY = {
     changeLocation: 'تغيير الموقع',
     pickupMapTitle: 'موقع الاستلام',
     destMapTitle: 'موقع التوصيل',
-    mapHint: 'اضغط على الخريطة لوضع علامة',
+    mapHint: 'اضغط على الخريطة لتحديد الموقع، ثم أضف تفاصيل الشارع',
     mapConfirm: 'تأكيد الموقع',
     mapCancel: 'إلغاء',
   },
@@ -247,7 +247,7 @@ export function CourierRequestScreen() {
       </View>
 
       <Text style={styles.section}>{t.sectionRoute}</Text>
-      <Input label={t.pickupAddress} value={pickupAddressText} onChangeText={setPickupAddressText} />
+      <Input label={t.pickupAddress} value={pickupAddressText} onChangeText={setPickupAddressText} placeholder={lang === 'ar' ? 'مثال: بيت أخضر خلف مسجد النور' : 'e.g. Green house behind Al-Noor Mosque'} multiline />
       <View style={{ height: spacing.xs }} />
       <Button
         title={pickupCoords ? t.changeLocation : t.pickLocation}
@@ -261,7 +261,7 @@ export function CourierRequestScreen() {
       ) : null}
 
       <View style={{ height: spacing.sm }} />
-      <Input label={t.destinationAddress} value={destinationAddressText} onChangeText={setDestinationAddressText} />
+      <Input label={t.destinationAddress} value={destinationAddressText} onChangeText={setDestinationAddressText} placeholder={lang === 'ar' ? 'مثال: بوابة زرقاء أمام سوق الخضار' : 'e.g. Blue gate facing the vegetable market'} multiline />
       <View style={{ height: spacing.xs }} />
       <Button
         title={destCoords ? t.changeLocation : t.pickLocation}
