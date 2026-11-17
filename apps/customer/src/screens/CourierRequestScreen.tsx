@@ -8,6 +8,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
+import { MapPicker } from '../components/MapPicker';
 import type { RootStackParamList } from '../types';
 
 type PackageSize = 'ENVELOPE' | 'SMALL' | 'MEDIUM' | 'LARGE' | 'CUSTOM';
@@ -33,7 +34,7 @@ const COPY = {
     createBtn: 'Create order',
     backHome: 'Back to home',
     quoteLabel: 'Estimated price: ',
-    quoteProvisional: 'This is a provisional estimate. Final price depends on pickup and delivery locations (map integration pending).',
+    quoteProvisional: 'Final price depends on distance between pickup and destination.',
     currency: 'SDG',
     errSenderName: 'Enter sender name',
     errSenderPhone: 'Enter sender phone',
@@ -43,6 +44,8 @@ const COPY = {
     errPackageCat: 'Enter package category',
     errPickup: 'Enter pickup address',
     errDestination: 'Enter destination address',
+    errPickupLocation: 'Pick the pickup location on the map',
+    errDestLocation: 'Pick the destination location on the map',
     errGeneric: 'Something went wrong. Please try again.',
     errQuote: 'Failed to fetch quote',
     errCreate: 'Failed to create order. Check all fields; phone must start with +249.',
@@ -52,6 +55,13 @@ const COPY = {
     sizeMedium: 'Medium',
     sizeLarge: 'Large',
     sizeCustom: 'Custom',
+    pickLocation: 'Pick on map',
+    changeLocation: 'Change location',
+    pickupMapTitle: 'Pickup location',
+    destMapTitle: 'Destination location',
+    mapHint: 'Tap on the map to place a marker',
+    mapConfirm: 'Confirm location',
+    mapCancel: 'Cancel',
   },
   ar: {
     title: 'طلب توصيل',
@@ -73,7 +83,7 @@ const COPY = {
     createBtn: 'إنشاء الطلب',
     backHome: 'العودة للرئيسية',
     quoteLabel: 'السعر التقديري: ',
-    quoteProvisional: 'هذا سعر تقديري. السعر النهائي يعتمد على موقعي الاستلام والتوصيل (تكامل الخرائط قيد التخطيط).',
+    quoteProvisional: 'السعر النهائي يعتمد على المسافة بين موقعي الاستلام والتوصيل.',
     currency: 'SDG',
     errSenderName: 'أدخل اسم المرسل',
     errSenderPhone: 'أدخل هاتف المرسل',
@@ -83,6 +93,8 @@ const COPY = {
     errPackageCat: 'أدخل فئة الطرد',
     errPickup: 'أدخل عنوان الاستلام',
     errDestination: 'أدخل عنوان التوصيل',
+    errPickupLocation: 'حدّد موقع الاستلام على الخريطة',
+    errDestLocation: 'حدّد موقع التوصيل على الخريطة',
     errGeneric: 'حدث خطأ. حاول مرة أخرى.',
     errQuote: 'تعذّر جلب السعر',
     errCreate: 'تعذّر إنشاء الطلب. تأكد من ملء الحقول وأن رقم الهاتف يبدأ بـ +249',
@@ -92,6 +104,13 @@ const COPY = {
     sizeMedium: 'متوسط',
     sizeLarge: 'كبير',
     sizeCustom: 'مخصص',
+    pickLocation: 'تحديد على الخريطة',
+    changeLocation: 'تغيير الموقع',
+    pickupMapTitle: 'موقع الاستلام',
+    destMapTitle: 'موقع التوصيل',
+    mapHint: 'اضغط على الخريطة لوضع علامة',
+    mapConfirm: 'تأكيد الموقع',
+    mapCancel: 'إلغاء',
   },
 } as const;
 
@@ -109,6 +128,9 @@ export function CourierRequestScreen() {
   const [packageSize, setPackageSize] = useState<PackageSize>('SMALL');
   const [pickupAddressText, setPickupAddressText] = useState('');
   const [destinationAddressText, setDestinationAddressText] = useState('');
+  const [pickupCoords, setPickupCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [destCoords, setDestCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [mapFor, setMapFor] = useState<'pickup' | 'destination' | null>(null);
 
   const [quote, setQuote] = useState<string | null>(null);
   const [quoting, setQuoting] = useState(false);
@@ -125,6 +147,8 @@ export function CourierRequestScreen() {
     if (!packageCategory.trim()) return t.errPackageCat;
     if (!pickupAddressText.trim()) return t.errPickup;
     if (!destinationAddressText.trim()) return t.errDestination;
+    if (!pickupCoords) return t.errPickupLocation;
+    if (!destCoords) return t.errDestLocation;
     return null;
   };
 
@@ -132,7 +156,12 @@ export function CourierRequestScreen() {
     setErr(null);
     setQuoting(true);
     try {
-      const r = await api.courierQuote({});
+      const r = await api.courierQuote({
+        pickupLat: pickupCoords?.lat,
+        pickupLng: pickupCoords?.lng,
+        destLat: destCoords?.lat,
+        destLng: destCoords?.lng,
+      });
       setQuote(r.quotedPrice);
     } catch (e: any) {
       setErr(e?.message ?? t.errQuote);
@@ -159,7 +188,11 @@ export function CourierRequestScreen() {
         packageCategory: packageCategory.trim(),
         packageSize,
         pickupAddressText: pickupAddressText.trim(),
+        pickupLat: pickupCoords?.lat,
+        pickupLng: pickupCoords?.lng,
         destinationAddressText: destinationAddressText.trim(),
+        destinationLat: destCoords?.lat,
+        destinationLng: destCoords?.lng,
       });
       setSuccess(`${t.successPrefix}${r.order.orderNumber}`);
     } catch (e: any) {
@@ -215,8 +248,31 @@ export function CourierRequestScreen() {
 
       <Text style={styles.section}>{t.sectionRoute}</Text>
       <Input label={t.pickupAddress} value={pickupAddressText} onChangeText={setPickupAddressText} />
+      <View style={{ height: spacing.xs }} />
+      <Button
+        title={pickupCoords ? t.changeLocation : t.pickLocation}
+        onPress={() => setMapFor('pickup')}
+        variant="secondary"
+      />
+      {pickupCoords ? (
+        <Text style={styles.coordsTxt}>
+          {pickupCoords.lat.toFixed(5)}, {pickupCoords.lng.toFixed(5)}
+        </Text>
+      ) : null}
+
       <View style={{ height: spacing.sm }} />
       <Input label={t.destinationAddress} value={destinationAddressText} onChangeText={setDestinationAddressText} />
+      <View style={{ height: spacing.xs }} />
+      <Button
+        title={destCoords ? t.changeLocation : t.pickLocation}
+        onPress={() => setMapFor('destination')}
+        variant="secondary"
+      />
+      {destCoords ? (
+        <Text style={styles.coordsTxt}>
+          {destCoords.lat.toFixed(5)}, {destCoords.lng.toFixed(5)}
+        </Text>
+      ) : null}
 
       <View style={{ height: spacing.lg }} />
       <Button title={t.quoteBtn} onPress={getQuote} loading={quoting} variant="secondary" />
@@ -250,6 +306,22 @@ export function CourierRequestScreen() {
       {success ? (
         <Button title={t.backHome} onPress={() => nav.navigate('Home')} variant="secondary" style={{ marginTop: spacing.sm }} />
       ) : null}
+
+      <MapPicker
+        visible={mapFor !== null}
+        title={mapFor === 'pickup' ? t.pickupMapTitle : t.destMapTitle}
+        confirmLabel={t.mapConfirm}
+        cancelLabel={t.mapCancel}
+        hintLabel={t.mapHint}
+        initialLat={mapFor === 'pickup' ? pickupCoords?.lat : destCoords?.lat}
+        initialLng={mapFor === 'pickup' ? pickupCoords?.lng : destCoords?.lng}
+        onCancel={() => setMapFor(null)}
+        onConfirm={(lat, lng) => {
+          if (mapFor === 'pickup') setPickupCoords({ lat, lng });
+          if (mapFor === 'destination') setDestCoords({ lat, lng });
+          setMapFor(null);
+        }}
+      />
     </ScrollView>
   );
 }
@@ -269,6 +341,7 @@ const styles = StyleSheet.create({
   },
   sizeChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   sizeChipTxtActive: { color: '#fff' },
+  coordsTxt: { fontSize: fontSize.xs, color: colors.primary, fontWeight: '700', marginTop: spacing.xs, textAlign: 'center' },
   quoteBox: { backgroundColor: colors.primaryLight, padding: spacing.md, borderRadius: radius.md, marginTop: spacing.md },
   quoteTxt: { color: colors.primary, fontWeight: '800', textAlign: 'center', fontSize: fontSize.md },
   quoteNote: { color: colors.textMuted, fontSize: fontSize.xs, textAlign: 'center', marginTop: spacing.xs, lineHeight: 16 },

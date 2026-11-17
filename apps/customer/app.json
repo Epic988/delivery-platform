@@ -7,7 +7,7 @@
     "userInterfaceStyle": "light",
     "scheme": "delivery-customer",
     "splash": {
-      "backgroundColor": "#1E40AF"
+      "backgroundColor": "#0F6B50"
     },
     "assetBundlePatterns": [
       "**/*"
