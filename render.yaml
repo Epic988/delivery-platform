@@ -15,7 +15,7 @@ services:
       - key: LOG_LEVEL
         value: info
       - key: CORS_ORIGIN
-        value: https://delivery.epic988.app,https://delivery-admin.onrender.com
+        value: https://delivery.epic988.app,https://delivery-admin-rp6u.onrender.com
       - key: JWT_EXPIRES_IN
         value: 7d
       - key: BCRYPT_ROUNDS
