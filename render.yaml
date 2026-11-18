@@ -15,7 +15,7 @@ services:
       - key: LOG_LEVEL
         value: info
       - key: CORS_ORIGIN
-        value: https://delivery.epic988.app
+        value: https://delivery.epic988.app,https://delivery-admin.onrender.com
       - key: JWT_EXPIRES_IN
         value: 7d
       - key: BCRYPT_ROUNDS
@@ -26,4 +26,16 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
-
+  - type: web
+    name: delivery-admin
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci --prefix admin && npm run build --prefix admin
+    startCommand: npm run start --prefix admin
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://delivery-api-luar.onrender.com
