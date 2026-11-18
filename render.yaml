@@ -31,7 +31,7 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-    buildCommand: npm ci --prefix admin && npm run build --prefix admin
+    buildCommand: npm ci --include=dev --prefix admin && npm run build --prefix admin
     startCommand: npm run start --prefix admin
     autoDeploy: true
     envVars:
