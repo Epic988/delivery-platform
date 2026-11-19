@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 import { dispatchDriver } from '../services/dispatch.js';
+import { assertTransition } from '../services/orderStateMachine.js';
 import { hashPassword } from '../lib/password.js';
 import { normalizeSudanesePhone, isValidSudanesePhone } from '../lib/phone.js';
 
@@ -265,6 +266,102 @@ const adminRoutes: FastifyPluginAsync = async (app) => {
     });
     return { data };
   });
-};
-export default adminRoutes;
 
+
+  app.get('/admin/shopping-orders', admin, async (req) => {
+    const q = pageQuery
+      .extend({
+        status: z
+          .enum([
+            'PENDING','QUOTED','CONFIRMED','ASSIGNED','ACCEPTED',
+            'ARRIVING_AT_PICKUP','PICKED_UP','IN_TRANSIT','DELIVERED','FAILED','CANCELLED',
+          ])
+          .optional(),
+      })
+      .parse(req.query);
+    const page = q.page ?? 1;
+    const pageSize = q.pageSize ?? 20;
+    const where = q.status ? { status: q.status } : {};
+    const [data, total] = await Promise.all([
+      app.prisma.shoppingOrder.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          customer: { select: { id: true, fullName: true, phone: true } },
+          store: { select: { id: true, nameAr: true, slug: true } },
+          address: true,
+          items: { include: { product: { select: { id: true, nameAr: true, price: true } } } },
+          assignments: {
+            where: { isActive: true },
+            include: {
+              driver: { include: { user: { select: { fullName: true, phone: true } } } },
+            },
+          },
+        },
+      }),
+      app.prisma.shoppingOrder.count({ where }),
+    ]);
+    return {
+      data,
+      pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) },
+    };
+  });
+
+  app.patch('/admin/shopping-orders/:id/status', admin, async (req, reply) => {
+    const { id } = idSchema.parse(req.params);
+    const body = z
+      .object({
+        status: z.enum(['CONFIRMED', 'CANCELLED']),
+        reason: z.string().max(500).optional(),
+      })
+      .strict()
+      .parse(req.body);
+    const order = await app.prisma.shoppingOrder.findUnique({ where: { id } });
+    if (!order) return reply.status(404).send({ error: 'order_not_found' });
+    try {
+      assertTransition(order.status, body.status);
+    } catch {
+      return reply.status(409).send({
+        error: 'invalid_transition',
+        from: order.status,
+        to: body.status,
+      });
+    }
+    if (body.status === 'CANCELLED') {
+      const active = await app.prisma.assignment.findFirst({
+        where: { shoppingOrderId: id, isActive: true },
+      });
+      if (active) return reply.status(409).send({ error: 'order_has_active_assignment' });
+    }
+    const data: any = {
+      status: body.status,
+      events: {
+        create: {
+          orderType: 'SHOPPING',
+          status: body.status,
+          actorId: req.user.sub,
+          note: body.reason ?? 'admin_' + body.status.toLowerCase(),
+        },
+      },
+    };
+    if (body.status === 'CANCELLED') data.cancelledAt = new Date();
+    const updated = await app.prisma.shoppingOrder.update({
+      where: { id },
+      data,
+      include: {
+        customer: { select: { fullName: true, phone: true } },
+        store: { select: { id: true, nameAr: true, slug: true } },
+        items: true,
+        assignments: {
+          where: { isActive: true },
+          include: { driver: { include: { user: { select: { fullName: true, phone: true } } } } },
+        },
+      },
+    });
+    return { order: updated };
+  });
+};
+
+export default adminRoutes;

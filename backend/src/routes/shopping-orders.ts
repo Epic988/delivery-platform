@@ -106,7 +106,7 @@ const shoppingOrderRoutes: FastifyPluginAsync = async (app) => {
                 addressId: body.addressId,
                 zoneId: body.zoneId,
                 checkoutGroupId: group.id,
-                status: 'CONFIRMED',
+                status: 'PENDING',
                 subtotal,
                 deliveryFee,
                 total,
@@ -116,7 +116,7 @@ const shoppingOrderRoutes: FastifyPluginAsync = async (app) => {
                 events: {
                   create: {
                     orderType: 'SHOPPING',
-                    status: 'CONFIRMED',
+                    status: 'PENDING',
                     actorId: userId,
                     note: 'created',
                   },
